@@ -19,40 +19,7 @@
  */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <complex.h>
-#include <lal/Date.h>
-#include <lal/FrequencySeries.h>
-#include <lal/LALConstants.h>
-#include <lal/LALDatatypes.h>
-#include <lal/LALSimInspiral.h>
-#include <lal/Units.h>
-#include <lal/XLALError.h>
-
-
-#include "gsl/gsl_matrix.h"
-#include "gsl/gsl_vector.h"
-#include "gsl/gsl_linalg.h"
-#include "gsl/gsl_eigen.h"
-#include "gsl/gsl_permutation.h"
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_roots.h>
-#include <gsl/gsl_sf_bessel.h>
-#include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_complex.h>
-#include <gsl/gsl_complex_math.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_spline.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_multiroots.h>
-#include <gsl/gsl_rng.h>
-
-#include "LALSimInspiralOptimizedCoefficientsEccentricityFD.c"
-
-#define gamma (0.577215664901532860606512090)
+#include "InspiralEccentricFD.h"
 
 #ifdef __GNUC__
 #define UNUSED __attribute__ ((unused))
@@ -65,7 +32,7 @@ typedef struct
 tagexpnCoeffsEPC {
 
     /*Input params*/
-    REAL8 f0, e0;
+    //REAL8 f0, e0;
 
     /* Coefficients to reconstruct the phase*/
     REAL8 a0, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11, a12,a13,a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, a33, a34, a35, a36, a37, a38, a39, a40;
@@ -81,13 +48,14 @@ tagexpnCoeffsEPC {
     REAL8 d1p, d2p, d3p, d4p, d5p, d6p, d7p, d8p, d9p, d10p, d11p, d12p, d13p, d14p, d15p, d16p, d17p, d18p, d19p, d20p, d21p, d22p, d23p, d24p, d25p, d26p, d27p, d28p, d29p;
     /*cross component*/
     REAL8 d1c, d2c, d3c, d4c, d5c, d6c, d7c, d8c, d9c, d10c, d11c, d12c, d13c, d14c, d15c, d16c, d17c, d18c, d19c, d20c, d21c, d22c, d23c, d24c, d25c, d26c, d27c, d28c, d29c;
+
     /* symmetric mass ratio, total mass, component masses*/
     //REAL8 nu,m,m1,m2,mu,Mtotal;
 
 }expnCoeffsEPC;
 
 static REAL8 PhaseAccTaylorF2(int k, REAL8 f, expnCoeffsEPC *ak){
-
+    //Note: 1408.3406, Appendix A
     REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1, f2, f3, f4, f8, fact, lo1, lo2, lo3, lo4,lfact;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
@@ -109,17 +77,17 @@ static REAL8 PhaseAccTaylorF2(int k, REAL8 f, expnCoeffsEPC *ak){
 
     switch( k )
     {
-        case 1: return( ak->a0*(1./lo2)*( 1.+ ak->a2*f1 + ak->a3*f2 + ak->a4*f3 + ak->a5*f4)  );
+        case 1: return(ak->a0*(1./lo2)*( 1.+ ak->a2*f1 + ak->a3*f2 + ak->a4*f3 + ak->a5*f4));
 
-        case 2: return( ak->a0*(1./lo1)*(ak->a6 + ak->a7*f1 + ak->a8*f2 + ak->a9*f3 + ak->a10*f4)  );
+        case 2: return(ak->a0*(1./lo1)*(ak->a6 + ak->a7*f1 + ak->a8*f2 + ak->a9*f3 + ak->a10*f4));
 
-        case 3: return( ak->a0*(1./lo3)*(ak->a11 + ak->a12*f1 + ak->a13*f2 + ak->a14*f3 + ak->a15*f4 ) );
+        case 3: return(ak->a0*(1./lo3)*(ak->a11 + ak->a12*f1 + ak->a13*f2 + ak->a14*f3 + ak->a15*f4));
 
-        case 4: return(ak->a0*(1./lo4)*(ak->a16 + ak->a17*f1 + ak->a18*f2 + ak->a19*f3 + ak->a20*f4)  );
+        case 4: return(ak->a0*(1./lo4)*(ak->a16 + ak->a17*f1 + ak->a18*f2 + ak->a19*f3 + ak->a20*f4));
 
-        case 5: return( ak->a0*(ak->a21 + ak->a21*log(lfact*lo1) +ak->a22*f1+ak->a23*f2 + ak->a24*f3+ak->a25*f4 ) );
+        case 5: return(ak->a0*(ak->a21 + ak->a21*log(lfact*lo1) +ak->a22*f1+ak->a23*f2 + ak->a24*f3+ak->a25*f4));
 
-        case 6: return(ak->a0*(lo4)*(ak->a26 + log(4.*lo4)*(ak->a27 + ak->a28*f1 + ak->a29*f2 + ak->a30*f3 + ak->a31*f4 ) + ak->a32*f1 + ak->a33*f2 + ak->a34*f3 + ak->a35*f4  ) );
+        case 6: return(ak->a0*(lo4)*(ak->a26 + log(4.*lo4)*(ak->a27 + ak->a28*f1 + ak->a29*f2 + ak->a30*f3 + ak->a31*f4) + ak->a32*f1 + ak->a33*f2 + ak->a34*f3 + ak->a35*f4));
 
         case 7: return(ak->a0*(lo3)*( ak->a36 + ak->a37*f1+ ak->a38*f2+ ak->a39*f3+ak->a40*f4) );
 
@@ -128,7 +96,7 @@ static REAL8 PhaseAccTaylorF2(int k, REAL8 f, expnCoeffsEPC *ak){
     }
 }
 
-
+//Note: 0906.0313 Appendix B, Eq 3.11, Eq 4.20, Eq 4.31
 static REAL8 zeta_generic_re_plus(int k, REAL8 f, expnCoeffsEPC *ak) {
     REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
@@ -382,7 +350,7 @@ EPCSetup(
 
     ak->b1c = z1(e0, f0, inc, bet, 0., 1.);     ak->b2c = z2(e0, f0, inc, bet, 0., 1.);
     ak->b3c = z3(e0, f0, inc, bet, 0., 1.);     ak->b4c = z4(e0, f0, inc, bet, 0., 1.);
-    ak->b5c = z5(f0, inc, bet, 0., 1.);     ak->b6c = z6(e0, f0, inc, bet, 0., 1.);
+    ak->b5c = z5(f0, inc, bet, 0., 1.);         ak->b6c = z6(e0, f0, inc, bet, 0., 1.);
     ak->b7c = z7(e0, f0, inc, bet, 0., 1.);     ak->b8c = z8(e0, f0, inc, bet, 0., 1.);
     ak->b9c = z9(e0, f0, inc, bet, 0., 1.);     ak->b10c = z10(e0, f0, inc, bet, 0., 1.);
     ak->b11c = z11(e0, f0, inc, bet, 0., 1.);   ak->b12c = z12(e0, f0, inc, bet, 0., 1.);
@@ -398,7 +366,7 @@ EPCSetup(
 
     ak->d1c = q1(e0, f0, inc, bet, 0., 1.);     ak->d2c = q2(e0, f0, inc, bet, 0., 1.);
     ak->d3c = q3(e0, f0, inc, bet, 0., 1.);     ak->d4c = q4(e0, f0, inc, bet, 0., 1.);
-    ak->d5c = q5(f0, inc, bet, 0., 1.);     ak->d6c = q6(e0, f0, inc, bet, 0., 1.);
+    ak->d5c = q5(f0, inc, bet, 0., 1.);         ak->d6c = q6(e0, f0, inc, bet, 0., 1.);
     ak->d7c = q7(e0, f0, inc, bet, 0., 1.);     ak->d8c = q8(e0, f0, inc, bet, 0., 1.);
     ak->d9c = q9(e0, f0, inc, bet, 0., 1.);     ak->d10c = q10(e0, f0, inc, bet, 0., 1.);
     ak->d11c =q11(e0, f0, inc, bet, 0., 1.);    ak->d12c = q12(e0, f0, inc, bet, 0., 1.);
@@ -425,15 +393,14 @@ return 0;
 }
 
 
-
 /**
- * @addtogroup LALSimInspiralEccentricityFD_c
+ * @addtogroup SimInspiralEccentricFD_c
  * @brief Routines to generate frequency-domain eccentric inspiral waveforms.
  * @{
  */
 
 
-int XLALSimInspiralEFD(
+int SimInspiralEccentricFD(
         COMPLEX16FrequencySeries **hptilde,    /**< FD plus polarization */
         COMPLEX16FrequencySeries **hctilde,    /**< FD cross polarization */
         const REAL8 phiRef,                    /**< Orbital coalescence phase (rad) */
@@ -519,12 +486,14 @@ int XLALSimInspiralEFD(
     shft = LAL_TWOPI * (tC.gpsSeconds + 1e-9 * tC.gpsNanoSeconds);
 
    jStart = (size_t) ceil(fStart / deltaF);
-   f=jStart*deltaF;
+   f = (double) jStart*deltaF; //FIXME
    data_p = htilde_p->data->data;
    data_c = htilde_c->data->data;
 
-   /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition. Note that the functions zeta_real and zeta_im depend on several paramenters, including F_+ and F_x. Since zeta_real and zeta_im are linear function in the antenna pattern functions, czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
-
+   /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
+    * Note that the functions zeta_real and zeta_im depend on several paramenters, including F_+ and F_x.
+    * Since zeta_real and zeta_im are linear function in the antenna pattern functions,
+    * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
 
     for ( j=jStart;j<n;j++) {
             switch (phaseO) {
@@ -555,7 +524,6 @@ int XLALSimInspiralEFD(
                         czeta_FPlus_times_exphase  = gsl_complex_mul(czeta_FPlus, exphase);
                         czeta_FCross_times_exphase = gsl_complex_mul(czeta_FCross, exphase);
 
-
                         re_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FPlus_times_exphase);
                         im_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FPlus_times_exphase);
 
@@ -574,8 +542,6 @@ int XLALSimInspiralEFD(
                     XLAL_ERROR(XLAL_ETYPE, "Invalid phase PN order %d", phaseO);
         }
 
-
-
         /*Note that h(f)= FPlus*data_p + FCross*data_c, where the polarizations are given by:*/
 
         data_p[j] = Amplitude*pow(f,-7./6.)*(pc_re_hplus  + pc_im_hplus*1.0j);
@@ -586,6 +552,156 @@ int XLALSimInspiralEFD(
 
     *hptilde = htilde_p;
     *hctilde = htilde_c;
+    return XLAL_SUCCESS;
+
+}
+
+
+int SimInspiralEccentricFDAmpPhase(
+        COMPLEX16FrequencySeries *(*hp_amp)[10],
+        COMPLEX16FrequencySeries *(*hp_phase)[10],
+        const REAL8 phiRef,                    /**< Orbital coalescence phase (rad) */
+        const REAL8 deltaF,                    /**< Frequency resolution */
+        const REAL8 m1_SI,                     /**< Mass of companion 1 (kg) */
+        const REAL8 m2_SI,                     /**< Mass of companion 2 (kg) */
+        const REAL8 fStart,                    /**< Start GW frequency (Hz) */
+        const REAL8 fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
+        const REAL8 i,                         /**< Polar inclination of source (rad) */
+        const REAL8 r,                         /**< Distance of source (m) */
+        const REAL8 inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
+        const REAL8 e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+)
+
+{
+
+    gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
+
+
+    const REAL8 m1 = m1_SI / LAL_MSUN_SI;
+    const REAL8 m2 = m2_SI / LAL_MSUN_SI;
+    const REAL8 m = m1 + m2;
+    const REAL8 Mtotal = m * LAL_MTSUN_SI;  /* total mass in seconds */
+    const REAL8 eta = m1 * m2 / (m * m);
+    const REAL8 piM = LAL_PI * Mtotal;
+    const REAL8 vISCO = 1. / sqrt(6.);
+    const REAL8 fISCO = vISCO * vISCO * vISCO / piM;
+    const REAL8 fupper = 2.*fISCO;
+    const REAL8 mchirp= pow(eta, 3./5.)*Mtotal;
+    REAL8 shft, f_max;
+    REAL8 f;
+    const REAL8 zr=0.;
+    REAL8 Amplitude, zim, Phaseorder, pc_re_hplus, pc_im_hplus, pc_re_hcross, pc_im_hcross, re_hplus, im_hplus, re_hcross, im_hcross;
+    size_t j, n, jStart;
+
+    expnCoeffsEPC ak;
+
+    expnCoeffsEPC* ak_ptr = &ak;
+    EPCSetup( ak_ptr, m1, m2, fStart, i, inclination_azimuth, e_min);
+
+
+    COMPLEX16 *data_p = NULL;
+    COMPLEX16 *data_c = NULL;
+    LIGOTimeGPS tC = {0, 0};
+
+    COMPLEX16FrequencySeries *htilde_p;
+    COMPLEX16FrequencySeries *htilde_c;
+
+    /* Perform some initial checks */
+    //if (!hp_amp) XLAL_ERROR(XLAL_EFAULT);
+    //if (*hp_amp) XLAL_ERROR(XLAL_EFAULT);
+    //if (!hp_phase) XLAL_ERROR(XLAL_EFAULT);
+    //if (*hp_phase) XLAL_ERROR(XLAL_EFAULT);
+    if (m1_SI <= 0) XLAL_ERROR(XLAL_EDOM);
+    if (m2_SI <= 0) XLAL_ERROR(XLAL_EDOM);
+    if (fStart <= 0) XLAL_ERROR(XLAL_EDOM);
+    if (r <= 0) XLAL_ERROR(XLAL_EDOM);
+
+
+    /* allocate htilde_p and htilde_c*/
+    if ( fEnd == 0. ) // End at ISCO
+        f_max = fISCO;
+    else // End at user-specified freq.
+        f_max = fEnd;
+    n = (size_t) (f_max / deltaF + 1);
+    XLALGPSAdd(&tC, -1 / deltaF);  /* coalesce at t=0 */
+
+
+    htilde_p = XLALCreateCOMPLEX16FrequencySeries("htilde_p: FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
+    if (!htilde_p) XLAL_ERROR(XLAL_EFUNC);
+    memset(htilde_p->data->data, 0, n * sizeof(COMPLEX16));
+    XLALUnitDivide(&htilde_p->sampleUnits, &htilde_p->sampleUnits, &lalSecondUnit);
+
+    htilde_c = XLALCreateCOMPLEX16FrequencySeries("htilde_c: FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
+    if (!htilde_c) XLAL_ERROR(XLAL_EFUNC);
+    memset(htilde_c->data->data, 0, n * sizeof(COMPLEX16));
+    XLALUnitDivide(&htilde_c->sampleUnits, &htilde_c->sampleUnits, &lalSecondUnit);
+
+
+    /* extrinsic parameters*/
+    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*LAL_MRSUN_SI/LAL_MTSUN_SI;
+    shft = LAL_TWOPI * (tC.gpsSeconds + 1e-9 * tC.gpsNanoSeconds);
+
+    jStart = (size_t) ceil(fStart / deltaF);
+    f=jStart*deltaF;
+    data_p = htilde_p->data->data;
+    data_c = htilde_c->data->data;
+
+    /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
+     * Note that the functions zeta_real and zeta_im depend on several paramenters,
+     * including F_+ and F_x. Since zeta_real and zeta_im are linear function in the antenna pattern functions,
+     * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
+
+    for ( j=jStart;j<n;j++) {
+        pc_re_hplus=0.;
+        pc_im_hplus=0.;
+        pc_re_hcross=0.;
+        pc_im_hcross=0.;
+        Phaseorder=0.;
+
+        for(int k=1; k<8; k++){
+            Phaseorder+=-PhaseAccTaylorF2(k, f, &ak);
+        }
+
+        for(int lm=1;lm<11;lm++){
+
+            zim=M_PI/4. + pow(((REAL8)lm)/2.,8./3.)*Phaseorder - shft*f + ((REAL8)lm)*phiRef;
+
+            cphase = gsl_complex_rect (zr,zim);
+
+            czeta_FPlus = gsl_complex_rect (((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
+
+            czeta_FCross=gsl_complex_rect (((double)zeta_generic_re_cross(lm, f, &ak)),((double)zeta_generic_im_cross(lm, f, &ak)));
+
+            exphase=gsl_complex_exp (cphase);
+
+            czeta_FPlus_times_exphase  = gsl_complex_mul(czeta_FPlus, exphase);
+            czeta_FCross_times_exphase = gsl_complex_mul(czeta_FCross, exphase);
+
+
+            re_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FPlus_times_exphase);
+            im_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FPlus_times_exphase);
+
+            re_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FCross_times_exphase);
+            im_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FCross_times_exphase);
+
+
+            pc_re_hplus+=re_hplus;
+            pc_im_hplus+=im_hplus;
+
+            pc_re_hcross+=re_hcross;
+            pc_im_hcross+=im_hcross;
+        }
+
+        /*Note that h(f)= FPlus*data_p + FCross*data_c, where the polarizations are given by:*/
+
+        data_p[j] = Amplitude*pow(f,-7./6.)*(pc_re_hplus  + pc_im_hplus*1.0j);
+        data_c[j] = Amplitude*pow(f,-7./6.)*(pc_re_hcross + pc_im_hcross*1.0j);
+
+        f+=deltaF;
+    }
+
+    *hp_amp[0] = htilde_p;
+    *hp_phase[0] = htilde_c;
     return XLAL_SUCCESS;
 
 }

@@ -4,7 +4,7 @@ project(EccentricFD C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(EccentricFD main.c LALSimInspiralEccentricityFD.c LALSimInspiralOptimizedCoefficientsEccentricityFD.c)
+add_executable(EccentricFD main.c InspiralEccentricFD.c LALSimInspiralOptimizedCoefficientsEccentricityFD.c)
 
 target_link_libraries(EccentricFD m gsl lal lalsimulation)
 

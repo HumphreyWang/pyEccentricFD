@@ -1,5 +1,5 @@
-//#include <stdio.h>
-//#include <lal/LALDatatypes.h>
+// Based on: EccentricFD waveform from `lalsuite`
+// Edited by dice
 
 #include "InspiralEccentricFD.h"
 
@@ -17,23 +17,22 @@ int main(int argc, const char * argv[]) {
 
     COMPLEX16FrequencySeries *hptilde=NULL;
     COMPLEX16FrequencySeries *hctilde=NULL;
-    REAL8FrequencySeries **hp_harm_series_amp=NULL;
-    REAL8FrequencySeries **hp_harm_series_phase=NULL;
+    AmpPhaseFDWaveform **hp_harm_series=NULL;
     int j=1000;
 
-    SimInspiralEccentricFD(&hptilde, &hctilde, phiRef, deltaF, m1*LAL_MSUN_SI, m2*LAL_MSUN_SI,
-                           fStart, fEnd, i, Dl*1e6*LAL_PC_SI, inclination_azimuth, e_min, 7);
-    SimInspiralEccentricFDAmpPhase(&hp_harm_series_amp, &hp_harm_series_phase, phiRef, deltaF, m1*LAL_MSUN_SI, m2*LAL_MSUN_SI,
-                                   fStart, fEnd, i, Dl*1e6*LAL_PC_SI, inclination_azimuth, e_min);
+    SimInspiralEccentricFD(&hptilde, &hctilde, phiRef, deltaF, m1*MSUN_SI, m2*MSUN_SI,
+                           fStart, fEnd, i, Dl*1e6*PC_SI, inclination_azimuth, e_min, 7);
+    SimInspiralEccentricFDAmpPhase(&hp_harm_series, phiRef, deltaF, m1*MSUN_SI, m2*MSUN_SI,
+                                   fStart, fEnd, i, Dl*1e6*PC_SI, inclination_azimuth, e_min);
 
-    complex double x0 = (hptilde->data->data[j]);
+    complex double x0 = (hptilde->data[j]);
     printf("%.15e + %.15ei\n", creal(x0), cimag(x0));
 
     double a0, p0;
     gsl_complex x0_= {0., 0.};
     for(int lm=0;lm<10;lm++) {
-        a0 = (hp_harm_series_amp[lm]->data->data[j]);
-        p0 = (hp_harm_series_phase[lm]->data->data[j]);
+        a0 = (hp_harm_series[lm]->amp[j]);
+        p0 = (hp_harm_series[lm]->phase[j]);
         x0_ = gsl_complex_add(x0_, gsl_complex_polar(a0, p0));
         printf("(%.15e, %.15e)\n", a0, p0);
     }

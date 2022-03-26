@@ -19,6 +19,7 @@
  */
 
 
+#include "InspiralOptimizedCoefficientsEccentricityFD.c"
 #include "InspiralEccentricFD.h"
 
 #ifdef __GNUC__
@@ -32,31 +33,31 @@ typedef struct
 tagexpnCoeffsEPC {
 
     /*Input params*/
-    //REAL8 f0, e0;
+    //double f0, e0;
 
     /* Coefficients to reconstruct the phase*/
-    REAL8 a0, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11, a12,a13,a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, a33, a34, a35, a36, a37, a38, a39, a40;
+    double a0, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11, a12,a13,a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, a33, a34, a35, a36, a37, a38, a39, a40;
 
     /*Coefficients to reconstruct z_real*/
     /*plus component*/
-    REAL8 b1p, b2p, b3p, b4p, b5p, b6p, b7p, b8p, b9p, b10p, b11p, b12p, b13p, b14p, b15p, b16p, b17p, b18p, b19p, b20p, b21p, b22p, b23p, b24p, b25p, b26p, b27p, b28p, b29p;
+    double b1p, b2p, b3p, b4p, b5p, b6p, b7p, b8p, b9p, b10p, b11p, b12p, b13p, b14p, b15p, b16p, b17p, b18p, b19p, b20p, b21p, b22p, b23p, b24p, b25p, b26p, b27p, b28p, b29p;
     /*cross component*/
-    REAL8 b1c, b2c, b3c, b4c, b5c, b6c, b7c, b8c, b9c, b10c, b11c, b12c, b13c, b14c, b15c, b16c, b17c, b18c, b19c, b20c, b21c, b22c, b23c, b24c, b25c, b26c, b27c, b28c, b29c;
+    double b1c, b2c, b3c, b4c, b5c, b6c, b7c, b8c, b9c, b10c, b11c, b12c, b13c, b14c, b15c, b16c, b17c, b18c, b19c, b20c, b21c, b22c, b23c, b24c, b25c, b26c, b27c, b28c, b29c;
 
     /*Coefficients to reconstruct z_imaginary*/
     /*plus component*/
-    REAL8 d1p, d2p, d3p, d4p, d5p, d6p, d7p, d8p, d9p, d10p, d11p, d12p, d13p, d14p, d15p, d16p, d17p, d18p, d19p, d20p, d21p, d22p, d23p, d24p, d25p, d26p, d27p, d28p, d29p;
+    double d1p, d2p, d3p, d4p, d5p, d6p, d7p, d8p, d9p, d10p, d11p, d12p, d13p, d14p, d15p, d16p, d17p, d18p, d19p, d20p, d21p, d22p, d23p, d24p, d25p, d26p, d27p, d28p, d29p;
     /*cross component*/
-    REAL8 d1c, d2c, d3c, d4c, d5c, d6c, d7c, d8c, d9c, d10c, d11c, d12c, d13c, d14c, d15c, d16c, d17c, d18c, d19c, d20c, d21c, d22c, d23c, d24c, d25c, d26c, d27c, d28c, d29c;
+    double d1c, d2c, d3c, d4c, d5c, d6c, d7c, d8c, d9c, d10c, d11c, d12c, d13c, d14c, d15c, d16c, d17c, d18c, d19c, d20c, d21c, d22c, d23c, d24c, d25c, d26c, d27c, d28c, d29c;
 
     /* symmetric mass ratio, total mass, component masses*/
-    //REAL8 nu,m,m1,m2,mu,Mtotal;
+    //double nu,m,m1,m2,mu,Mtotal;
 
 }expnCoeffsEPC;
 
-static REAL8 PhaseAccTaylorF2(int k, REAL8 f, expnCoeffsEPC *ak){
+static double PhaseAccTaylorF2(int k, double f, expnCoeffsEPC *ak){
     //Note: 1408.3406, Appendix A
-    REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1, f2, f3, f4, f8, fact, lo1, lo2, lo3, lo4,lfact;
+    double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1, f2, f3, f4, f8, fact, lo1, lo2, lo3, lo4,lfact;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -97,8 +98,8 @@ static REAL8 PhaseAccTaylorF2(int k, REAL8 f, expnCoeffsEPC *ak){
 }
 
 //Note: 0906.0313 Appendix B, Eq 3.11, Eq 4.20, Eq 4.31
-static REAL8 zeta_generic_re_plus(int k, REAL8 f, expnCoeffsEPC *ak) {
-    REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+static double zeta_generic_re_plus(int k, double f, expnCoeffsEPC *ak) {
+    double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -141,8 +142,8 @@ static REAL8 zeta_generic_re_plus(int k, REAL8 f, expnCoeffsEPC *ak) {
     }
 }
 
-static REAL8 zeta_generic_re_cross(int k, REAL8 f, expnCoeffsEPC *ak) {
-   REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+static double zeta_generic_re_cross(int k, double f, expnCoeffsEPC *ak) {
+   double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -186,8 +187,8 @@ static REAL8 zeta_generic_re_cross(int k, REAL8 f, expnCoeffsEPC *ak) {
 }
 
 
-static REAL8 zeta_generic_im_plus(int k, REAL8 f, expnCoeffsEPC *ak) {
-   REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+static double zeta_generic_im_plus(int k, double f, expnCoeffsEPC *ak) {
+   double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -230,8 +231,8 @@ static REAL8 zeta_generic_im_plus(int k, REAL8 f, expnCoeffsEPC *ak) {
     }
 }
 
-static REAL8 zeta_generic_im_cross(int k, REAL8 f, expnCoeffsEPC *ak) {
-   REAL8 k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+static double zeta_generic_im_cross(int k, double f, expnCoeffsEPC *ak) {
+   double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -278,22 +279,22 @@ static REAL8 zeta_generic_im_cross(int k, REAL8 f, expnCoeffsEPC *ak) {
 static int
 EPCSetup(
          expnCoeffsEPC *ak,                   /**< coefficients for EPC evolution [modified] */
-         const REAL8 m1,                      /**< Mass of companion 1 (kg) */
-         const REAL8 m2,                      /**< Mass of companion 2 (kg) */
-         const REAL8 fStart,                  /**< Start GW frequency (Hz) */
-         const REAL8 i,                       /**< Polar inclination of source (rad) */
-         const REAL8 inclination_azimuth,     /**< Azimuthal component of inclination angles */
-         const REAL8 e_min                    /**< Initial eccentricity at f_min: range [0, 0.5] */
+         const double m1,                      /**< Mass of companion 1 (kg) */
+         const double m2,                      /**< Mass of companion 2 (kg) */
+         const double fStart,                  /**< Start GW frequency (Hz) */
+         const double i,                       /**< Polar inclination of source (rad) */
+         const double inclination_azimuth,     /**< Azimuthal component of inclination angles */
+         const double e_min                    /**< Initial eccentricity at f_min: range [0, 0.5] */
          )
 {
 
-    const REAL8 m = m1 + m2;
-    const REAL8 Mtotal = m * LAL_MTSUN_SI;  /* total mass in seconds */
-    const REAL8 eta = m1 * m2 / (m * m);
-    const REAL8 e0=e_min;
-    const REAL8 inc=i;
-    const REAL8 bet=inclination_azimuth;
-    const REAL8 f0=fStart;
+    const double m = m1 + m2;
+    const double Mtotal = m * MTSUN_SI;  /* total mass in seconds */
+    const double eta = m1 * m2 / (m * m);
+    const double e0=e_min;
+    const double inc=i;
+    const double bet=inclination_azimuth;
+    const double f0=fStart;
 
     /* Coefficients to reconstruct the phase*/
 
@@ -385,7 +386,7 @@ EPCSetup(
 }
 
 
-static REAL8 Heaviside( REAL8 x){
+static double Heaviside( double x){
 if( x >= 0 )
     return 1;
 
@@ -393,27 +394,20 @@ return 0;
 }
 
 
-/**
- * @addtogroup SimInspiralEccentricFD_c
- * @brief Routines to generate frequency-domain eccentric inspiral waveforms.
- * @{
- */
-
-
 int SimInspiralEccentricFD(
         COMPLEX16FrequencySeries **hptilde,    /**< FD plus polarization */
         COMPLEX16FrequencySeries **hctilde,    /**< FD cross polarization */
-        const REAL8 phiRef,                    /**< Orbital coalescence phase (rad) */
-        const REAL8 deltaF,                    /**< Frequency resolution */
-        const REAL8 m1_SI,                     /**< Mass of companion 1 (kg) */
-        const REAL8 m2_SI,                     /**< Mass of companion 2 (kg) */
-        const REAL8 fStart,                    /**< Start GW frequency (Hz) */
-        const REAL8 fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
-        const REAL8 i,                         /**< Polar inclination of source (rad) */
-        const REAL8 r,                         /**< Distance of source (m) */
-        const REAL8 inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
-        const REAL8 e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
-        const INT4 phaseO                      /**< Twice PN phase order */
+        const double phiRef,                    /**< Orbital coalescence phase (rad) */
+        const double deltaF,                    /**< Frequency resolution */
+        const double m1_SI,                     /**< Mass of companion 1 (kg) */
+        const double m2_SI,                     /**< Mass of companion 2 (kg) */
+        const double fStart,                    /**< Start GW frequency (Hz) */
+        const double fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
+        const double i,                         /**< Polar inclination of source (rad) */
+        const double r,                         /**< Distance of source (m) */
+        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
+        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const int32_t phaseO                      /**< Twice PN phase order */
 	)
 
   {
@@ -421,20 +415,20 @@ int SimInspiralEccentricFD(
     gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
 
 
-    const REAL8 m1 = m1_SI / LAL_MSUN_SI;
-    const REAL8 m2 = m2_SI / LAL_MSUN_SI;
-    const REAL8 m = m1 + m2;
-    const REAL8 Mtotal = m * LAL_MTSUN_SI;  /* total mass in seconds */
-    const REAL8 eta = m1 * m2 / (m * m);
-    const REAL8 piM = LAL_PI * Mtotal;
-    const REAL8 vISCO = 1. / sqrt(6.);
-    const REAL8 fISCO = vISCO * vISCO * vISCO / piM;
-    const REAL8 fupper = 2.*fISCO;
-    const REAL8 mchirp= pow(eta, 3./5.)*Mtotal;
-    REAL8 shft, f_max;
-    REAL8 f;
-    const REAL8 zr=0.;
-    REAL8 Amplitude, zim, Phaseorder, pc_re_hplus, pc_im_hplus, pc_re_hcross, pc_im_hcross, re_hplus, im_hplus, re_hcross, im_hcross;
+    const double m1 = m1_SI / MSUN_SI;
+    const double m2 = m2_SI / MSUN_SI;
+    const double m = m1 + m2;
+    const double Mtotal = m * MTSUN_SI;  /* total mass in seconds */
+    const double eta = m1 * m2 / (m * m);
+    const double piM = PI * Mtotal;
+    const double vISCO = 1. / sqrt(6.);
+    const double fISCO = vISCO * vISCO * vISCO / piM;
+    const double fupper = 2.*fISCO;
+    const double mchirp= pow(eta, 3./5.)*Mtotal;
+    double shft, f_max;
+    double f;
+    const double zr=0.;
+    double Amplitude, zim, Phaseorder, pc_re_hplus, pc_im_hplus, pc_re_hcross, pc_im_hcross, re_hplus, im_hplus, re_hcross, im_hcross;
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
@@ -443,22 +437,22 @@ int SimInspiralEccentricFD(
     EPCSetup( ak_ptr, m1, m2, fStart, i, inclination_azimuth, e_min);
 
 
-    COMPLEX16 *data_p = NULL;
-    COMPLEX16 *data_c = NULL;
-    LIGOTimeGPS tC = {0, 0};
+    complex double *data_p = NULL;
+    complex double *data_c = NULL;
+    double tC = -1. / deltaF;  /* coalesce at t=0 */
 
     COMPLEX16FrequencySeries *htilde_p;
     COMPLEX16FrequencySeries *htilde_c;
 
     /* Perform some initial checks */
-    if (!hptilde) XLAL_ERROR(XLAL_EFAULT);
-    if (*hptilde) XLAL_ERROR(XLAL_EFAULT);
-    if (!hctilde) XLAL_ERROR(XLAL_EFAULT);
-    if (*hctilde) XLAL_ERROR(XLAL_EFAULT);
-    if (m1_SI <= 0) XLAL_ERROR(XLAL_EDOM);
-    if (m2_SI <= 0) XLAL_ERROR(XLAL_EDOM);
-    if (fStart <= 0) XLAL_ERROR(XLAL_EDOM);
-    if (r <= 0) XLAL_ERROR(XLAL_EDOM);
+    //if (!hptilde) ERROR(PD_EFAULT, NULL);
+    //if (*hptilde) ERROR(PD_EFAULT, NULL);
+    //if (!hctilde) ERROR(PD_EFAULT, NULL);
+    //if (*hctilde) ERROR(PD_EFAULT, NULL);
+    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (fStart <= 0) ERROR(PD_EDOM, NULL);
+    if (r <= 0) ERROR(PD_EDOM, NULL);
 
 
     /* allocate htilde_p and htilde_c*/
@@ -467,28 +461,23 @@ int SimInspiralEccentricFD(
     else // End at user-specified freq.
         f_max = fEnd;
     n = (size_t) (f_max / deltaF + 1);
-    XLALGPSAdd(&tC, -1 / deltaF);  /* coalesce at t=0 */
 
 
-    htilde_p = XLALCreateCOMPLEX16FrequencySeries("htilde_p: FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
-    if (!htilde_p) XLAL_ERROR(XLAL_EFUNC);
-    memset(htilde_p->data->data, 0, n * sizeof(COMPLEX16));
-    XLALUnitDivide(&htilde_p->sampleUnits, &htilde_p->sampleUnits, &lalSecondUnit);
+    htilde_p = CreateCOMPLEX16FrequencySeries("htilde_p: FD waveform", deltaF, n);
+    if (!htilde_p) ERROR(PD_EFUNC, NULL);
 
-    htilde_c = XLALCreateCOMPLEX16FrequencySeries("htilde_c: FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
-    if (!htilde_c) XLAL_ERROR(XLAL_EFUNC);
-    memset(htilde_c->data->data, 0, n * sizeof(COMPLEX16));
-    XLALUnitDivide(&htilde_c->sampleUnits, &htilde_c->sampleUnits, &lalSecondUnit);
+    htilde_c = CreateCOMPLEX16FrequencySeries("htilde_c: FD waveform", deltaF, n);
+    if (!htilde_c) ERROR(PD_EFUNC, NULL);
 
 
    /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*LAL_MRSUN_SI/LAL_MTSUN_SI;
-    shft = LAL_TWOPI * (tC.gpsSeconds + 1e-9 * tC.gpsNanoSeconds);
+    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*MRSUN_SI/MTSUN_SI;
+    shft = TWOPI * tC;
 
    jStart = (size_t) ceil(fStart / deltaF);
    f = (double) jStart*deltaF;
-   data_p = htilde_p->data->data;
-   data_c = htilde_c->data->data;
+   data_p = htilde_p->data;
+   data_c = htilde_c->data;
 
    /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
     * Note that the functions zeta_real and zeta_im depend on several paramenters, including F_+ and F_x.
@@ -511,7 +500,7 @@ int SimInspiralEccentricFD(
 
                     for(int lm=1;lm<11;lm++){
 
-                        zim=M_PI/4. + pow(((REAL8)lm)/2.,8./3.)*Phaseorder - shft*f + ((REAL8)lm)*phiRef;
+                        zim=M_PI/4. + pow(((double)lm)/2.,8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
 
                         cphase = gsl_complex_rect (zr,zim);
 
@@ -539,7 +528,7 @@ int SimInspiralEccentricFD(
                     }
                  break;
                  default:
-                    XLAL_ERROR(XLAL_ETYPE, "Invalid phase PN order %d", phaseO);
+                    ERROR(PD_ETYPE, "Invalid phase PN order");
         }
 
         /*Note that h(f)= FPlus*data_p + FCross*data_c, where the polarizations are given by:*/
@@ -552,42 +541,41 @@ int SimInspiralEccentricFD(
 
     *hptilde = htilde_p;
     *hctilde = htilde_c;
-    return XLAL_SUCCESS;
+    return PD_SUCCESS;
 
 }
 
 
 int SimInspiralEccentricFDAmpPhase(
-        REAL8FrequencySeries ***hp_amp,
-        REAL8FrequencySeries ***hp_phase,
-        const REAL8 phiRef,                    /**< Orbital coalescence phase (rad) */
-        const REAL8 deltaF,                    /**< Frequency resolution */
-        const REAL8 m1_SI,                     /**< Mass of companion 1 (kg) */
-        const REAL8 m2_SI,                     /**< Mass of companion 2 (kg) */
-        const REAL8 fStart,                    /**< Start GW frequency (Hz) */
-        const REAL8 fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
-        const REAL8 i,                         /**< Polar inclination of source (rad) */
-        const REAL8 r,                         /**< Distance of source (m) */
-        const REAL8 inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
-        const REAL8 e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        AmpPhaseFDWaveform ***hp_amp_phase,
+        const double phiRef,                    /**< Orbital coalescence phase (rad) */
+        const double deltaF,                    /**< Frequency resolution */
+        const double m1_SI,                     /**< Mass of companion 1 (kg) */
+        const double m2_SI,                     /**< Mass of companion 2 (kg) */
+        const double fStart,                    /**< Start GW frequency (Hz) */
+        const double fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
+        const double i,                         /**< Polar inclination of source (rad) */
+        const double r,                         /**< Distance of source (m) */
+        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
+        const double e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
 )
 
 {
-    const REAL8 m1 = m1_SI / LAL_MSUN_SI;
-    const REAL8 m2 = m2_SI / LAL_MSUN_SI;
-    const REAL8 m = m1 + m2;
-    const REAL8 Mtotal = m * LAL_MTSUN_SI;  /* total mass in seconds */
-    const REAL8 eta = m1 * m2 / (m * m);
-    const REAL8 piM = LAL_PI * Mtotal;
-    const REAL8 vISCO = 1. / sqrt(6.);
-    const REAL8 fISCO = vISCO * vISCO * vISCO / piM;
-    const REAL8 fupper = 2.*fISCO;
-    const REAL8 mchirp= pow(eta, 3./5.)*Mtotal;
-    REAL8 shft, f_max;
-    REAL8 f;
+    const double m1 = m1_SI / MSUN_SI;
+    const double m2 = m2_SI / MSUN_SI;
+    const double m = m1 + m2;
+    const double Mtotal = m * MTSUN_SI;  /* total mass in seconds */
+    const double eta = m1 * m2 / (m * m);
+    const double piM = PI * Mtotal;
+    const double vISCO = 1. / sqrt(6.);
+    const double fISCO = vISCO * vISCO * vISCO / piM;
+    const double fupper = 2.*fISCO;
+    const double mchirp= pow(eta, 3./5.)*Mtotal;
+    double shft, f_max;
+    double f;
 
     gsl_complex czeta_FPlus;
-    REAL8 Amplitude, phase_tay, Phaseorder, hplus_a, hplus_p, czeta_FPlus_abs, czeta_FPlus_arg;
+    double Amplitude, phase_tay, Phaseorder, hplus_a, hplus_p, czeta_FPlus_abs, czeta_FPlus_arg;
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
@@ -596,22 +584,21 @@ int SimInspiralEccentricFDAmpPhase(
     EPCSetup( ak_ptr, m1, m2, fStart, i, inclination_azimuth, e_min);
 
 
-    REAL8 *data_a[10] = {};
-    REAL8 *data_p[10] = {};
-    LIGOTimeGPS tC = {0, 0};
+    double *data_a[10] = {};
+    double *data_p[10] = {};
+    long tC = floor(-1. / deltaF * 1e9);  /* coalesce at t=0 */
 
-    REAL8FrequencySeries *htilde_a;
-    REAL8FrequencySeries *htilde_p;
+    AmpPhaseFDWaveform *htilde_ap;
 
     /* Perform some initial checks */
-    //if (!hp_amp) XLAL_ERROR(XLAL_EFAULT);
-    //if (*hp_amp) XLAL_ERROR(XLAL_EFAULT);
-    //if (!hp_phase) XLAL_ERROR(XLAL_EFAULT);
-    //if (*hp_phase) XLAL_ERROR(XLAL_EFAULT);
-    if (m1_SI <= 0) XLAL_ERROR(XLAL_EDOM);
-    if (m2_SI <= 0) XLAL_ERROR(XLAL_EDOM);
-    if (fStart <= 0) XLAL_ERROR(XLAL_EDOM);
-    if (r <= 0) XLAL_ERROR(XLAL_EDOM);
+    //if (!hp_amp) ERROR(PD_EFAULT, NULL);
+    //if (*hp_amp) ERROR(PD_EFAULT, NULL);
+    //if (!hp_phase) ERROR(PD_EFAULT, NULL);
+    //if (*hp_phase) ERROR(PD_EFAULT, NULL);
+    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (fStart <= 0) ERROR(PD_EDOM, NULL);
+    if (r <= 0) ERROR(PD_EDOM, NULL);
 
 
     /* allocate htilde_p and htilde_c*/
@@ -620,30 +607,21 @@ int SimInspiralEccentricFDAmpPhase(
     else // End at user-specified freq.
         f_max = fEnd;
     n = (size_t) (f_max / deltaF + 1);
-    XLALGPSAdd(&tC, -1 / deltaF);  /* coalesce at t=0 */
 
-    *hp_amp = (REAL8FrequencySeries **) malloc(sizeof(REAL8FrequencySeries *) * 10);
-    *hp_phase = (REAL8FrequencySeries **) malloc(sizeof(REAL8FrequencySeries *) * 10);
+    *hp_amp_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);
     for(int lm=0;lm<10;lm++){
 
-        htilde_a = XLALCreateREAL8FrequencySeries("hp_amp(j=): FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
-        if (!htilde_a) XLAL_ERROR(XLAL_EFUNC);
-        memset(htilde_a->data->data, 0, n * sizeof(REAL8));
-        XLALUnitDivide(&htilde_a->sampleUnits, &htilde_a->sampleUnits, &lalSecondUnit);
+        htilde_ap = CreateAmpPhaseFDWaveform(deltaF, n);
+        if (!htilde_ap) ERROR(PD_EFUNC, NULL);
 
-        htilde_p = XLALCreateREAL8FrequencySeries("hp_phase(j=): FD waveform", &tC, 0.0, deltaF, &lalDimensionlessUnit, n);
-        if (!htilde_p) XLAL_ERROR(XLAL_EFUNC);
-        memset(htilde_p->data->data, 0, n * sizeof(REAL8));
-
-        (*hp_amp)  [lm] = htilde_a;
-        (*hp_phase)[lm] = htilde_p;
-        data_a[lm] = ((*hp_amp)  [lm])->data->data;
-        data_p[lm] = ((*hp_phase)[lm])->data->data;
+        (*hp_amp_phase)  [lm] = htilde_ap;
+        data_a[lm] = ((*hp_amp_phase)[lm])->amp;
+        data_p[lm] = ((*hp_amp_phase)[lm])->phase;
     }
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*LAL_MRSUN_SI/LAL_MTSUN_SI;
-    shft = LAL_TWOPI * (tC.gpsSeconds + 1e-9 * tC.gpsNanoSeconds);
+    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*MRSUN_SI/MTSUN_SI;
+    shft = TWOPI * 1e-9 * ((double) tC);
 
     jStart = (size_t) ceil(fStart / deltaF);
     f = (double) jStart*deltaF;
@@ -662,7 +640,7 @@ int SimInspiralEccentricFDAmpPhase(
 
         for(int lm=1;lm<11;lm++){
             // Eq.(4.28)
-            phase_tay= M_PI/4. + pow(((REAL8)lm)/2., 8./3.)*Phaseorder - shft*f + ((REAL8)lm)*phiRef;
+            phase_tay= M_PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
             // Eq.(4.20)
             czeta_FPlus = gsl_complex_rect(((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
             // Eq.(4.22)
@@ -681,8 +659,6 @@ int SimInspiralEccentricFDAmpPhase(
         f+=deltaF;
     }
 
-    return XLAL_SUCCESS;
+    return PD_SUCCESS;
 
 }
-
-/** @} */

@@ -486,7 +486,7 @@ int SimInspiralEccentricFD(
     shft = LAL_TWOPI * (tC.gpsSeconds + 1e-9 * tC.gpsNanoSeconds);
 
    jStart = (size_t) ceil(fStart / deltaF);
-   f = (double) jStart*deltaF; //FIXME
+   f = (double) jStart*deltaF;
    data_p = htilde_p->data->data;
    data_c = htilde_c->data->data;
 
@@ -558,8 +558,8 @@ int SimInspiralEccentricFD(
 
 
 int SimInspiralEccentricFDAmpPhase(
-        COMPLEX16FrequencySeries *(*hp_amp)[10],
-        COMPLEX16FrequencySeries *(*hp_phase)[10],
+        REAL8FrequencySeries *(*hp_amp)[10],
+        REAL8FrequencySeries *(*hp_phase)[10],
         const REAL8 phiRef,                    /**< Orbital coalescence phase (rad) */
         const REAL8 deltaF,                    /**< Frequency resolution */
         const REAL8 m1_SI,                     /**< Mass of companion 1 (kg) */
@@ -573,10 +573,6 @@ int SimInspiralEccentricFDAmpPhase(
 )
 
 {
-
-    gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
-
-
     const REAL8 m1 = m1_SI / LAL_MSUN_SI;
     const REAL8 m2 = m2_SI / LAL_MSUN_SI;
     const REAL8 m = m1 + m2;
@@ -589,8 +585,9 @@ int SimInspiralEccentricFDAmpPhase(
     const REAL8 mchirp= pow(eta, 3./5.)*Mtotal;
     REAL8 shft, f_max;
     REAL8 f;
-    const REAL8 zr=0.;
-    REAL8 Amplitude, zim, Phaseorder, pc_re_hplus, pc_im_hplus, pc_re_hcross, pc_im_hcross, re_hplus, im_hplus, re_hcross, im_hcross;
+
+    gsl_complex czeta_FPlus;
+    REAL8 Amplitude, phase_tay, Phaseorder, hplus_a, hplus_p, czeta_FPlus_abs, czeta_FPlus_arg;
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
@@ -599,12 +596,12 @@ int SimInspiralEccentricFDAmpPhase(
     EPCSetup( ak_ptr, m1, m2, fStart, i, inclination_azimuth, e_min);
 
 
-    COMPLEX16 *data_p = NULL;
-    COMPLEX16 *data_c = NULL;
+    REAL8 *data_a[10] = {};
+    REAL8 *data_p[10] = {};
     LIGOTimeGPS tC = {0, 0};
 
-    COMPLEX16FrequencySeries *htilde_p;
-    COMPLEX16FrequencySeries *htilde_c;
+    REAL8FrequencySeries *htilde_a;
+    REAL8FrequencySeries *htilde_p;
 
     /* Perform some initial checks */
     //if (!hp_amp) XLAL_ERROR(XLAL_EFAULT);
@@ -618,90 +615,70 @@ int SimInspiralEccentricFDAmpPhase(
 
 
     /* allocate htilde_p and htilde_c*/
-    if ( fEnd == 0. ) // End at ISCO
+    if ( fEnd == 0. || fEnd > fISCO) // End at ISCO FIXME
         f_max = fISCO;
     else // End at user-specified freq.
         f_max = fEnd;
     n = (size_t) (f_max / deltaF + 1);
     XLALGPSAdd(&tC, -1 / deltaF);  /* coalesce at t=0 */
 
+    for(int lm=0;lm<10;lm++){
 
-    htilde_p = XLALCreateCOMPLEX16FrequencySeries("htilde_p: FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
-    if (!htilde_p) XLAL_ERROR(XLAL_EFUNC);
-    memset(htilde_p->data->data, 0, n * sizeof(COMPLEX16));
-    XLALUnitDivide(&htilde_p->sampleUnits, &htilde_p->sampleUnits, &lalSecondUnit);
+        htilde_a = XLALCreateREAL8FrequencySeries("hp_amp(j=): FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
+        if (!htilde_a) XLAL_ERROR(XLAL_EFUNC);
+        memset(htilde_a->data->data, 0, n * sizeof(REAL8));
+        XLALUnitDivide(&htilde_a->sampleUnits, &htilde_a->sampleUnits, &lalSecondUnit);
 
-    htilde_c = XLALCreateCOMPLEX16FrequencySeries("htilde_c: FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);
-    if (!htilde_c) XLAL_ERROR(XLAL_EFUNC);
-    memset(htilde_c->data->data, 0, n * sizeof(COMPLEX16));
-    XLALUnitDivide(&htilde_c->sampleUnits, &htilde_c->sampleUnits, &lalSecondUnit);
+        htilde_p = XLALCreateREAL8FrequencySeries("hp_phase(j=): FD waveform", &tC, 0.0, deltaF, &lalDimensionlessUnit, n);
+        if (!htilde_p) XLAL_ERROR(XLAL_EFUNC);
+        memset(htilde_p->data->data, 0, n * sizeof(REAL8));
 
+        (*hp_amp)  [lm] = htilde_a;
+        (*hp_phase)[lm] = htilde_p;
+        data_a[lm] = ((*hp_amp)  [lm])->data->data;
+        data_p[lm] = ((*hp_phase)[lm])->data->data;
+    }
 
     /* extrinsic parameters*/
     Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*LAL_MRSUN_SI/LAL_MTSUN_SI;
     shft = LAL_TWOPI * (tC.gpsSeconds + 1e-9 * tC.gpsNanoSeconds);
 
     jStart = (size_t) ceil(fStart / deltaF);
-    f=jStart*deltaF;
-    data_p = htilde_p->data->data;
-    data_c = htilde_c->data->data;
+    f = (double) jStart*deltaF;
 
     /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
      * Note that the functions zeta_real and zeta_im depend on several paramenters,
      * including F_+ and F_x. Since zeta_real and zeta_im are linear function in the antenna pattern functions,
      * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
 
-    for ( j=jStart;j<n;j++) {
-        pc_re_hplus=0.;
-        pc_im_hplus=0.;
-        pc_re_hcross=0.;
-        pc_im_hcross=0.;
-        Phaseorder=0.;
+    for (j=jStart;j<n;j++) {
 
+        Phaseorder=0.;
         for(int k=1; k<8; k++){
             Phaseorder+=-PhaseAccTaylorF2(k, f, &ak);
         }
 
         for(int lm=1;lm<11;lm++){
+            // Eq.(4.28)
+            phase_tay= M_PI/4. + pow(((REAL8)lm)/2., 8./3.)*Phaseorder - shft*f + ((REAL8)lm)*phiRef;
+            // Eq.(4.20)
+            czeta_FPlus = gsl_complex_rect(((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
+            // Eq.(4.22)
+            //czeta_FPlus_abs  = GSL_SIGN(GSL_REAL(czeta_FPlus))*gsl_complex_abs(czeta_FPlus);
+            //czeta_FPlus_arg  = atan(GSL_IMAG(czeta_FPlus)/ GSL_REAL(czeta_FPlus));
+            czeta_FPlus_abs  = gsl_complex_abs(czeta_FPlus);
+            czeta_FPlus_arg  = gsl_complex_arg(czeta_FPlus);
+            // TODO: we actually should set Heaviside funcs like Eq.(5.6), but is that necessary?
+            hplus_a= Heaviside(((double)lm)*fupper - 2.*f) * pow(((double)lm)/2., 2./3.) * czeta_FPlus_abs;
+            hplus_p= Heaviside(((double)lm)*fupper - 2.*f) * (phase_tay + czeta_FPlus_arg);
 
-            zim=M_PI/4. + pow(((REAL8)lm)/2.,8./3.)*Phaseorder - shft*f + ((REAL8)lm)*phiRef;
-
-            cphase = gsl_complex_rect (zr,zim);
-
-            czeta_FPlus = gsl_complex_rect (((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
-
-            czeta_FCross=gsl_complex_rect (((double)zeta_generic_re_cross(lm, f, &ak)),((double)zeta_generic_im_cross(lm, f, &ak)));
-
-            exphase=gsl_complex_exp (cphase);
-
-            czeta_FPlus_times_exphase  = gsl_complex_mul(czeta_FPlus, exphase);
-            czeta_FCross_times_exphase = gsl_complex_mul(czeta_FCross, exphase);
-
-
-            re_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FPlus_times_exphase);
-            im_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FPlus_times_exphase);
-
-            re_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FCross_times_exphase);
-            im_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FCross_times_exphase);
-
-
-            pc_re_hplus+=re_hplus;
-            pc_im_hplus+=im_hplus;
-
-            pc_re_hcross+=re_hcross;
-            pc_im_hcross+=im_hcross;
+            data_a[lm-1][j] = Amplitude*pow(f, -7./6.)*hplus_a;
+            data_p[lm-1][j] = hplus_p;
         }
-
-        /*Note that h(f)= FPlus*data_p + FCross*data_c, where the polarizations are given by:*/
-
-        data_p[j] = Amplitude*pow(f,-7./6.)*(pc_re_hplus  + pc_im_hplus*1.0j);
-        data_c[j] = Amplitude*pow(f,-7./6.)*(pc_re_hcross + pc_im_hcross*1.0j);
 
         f+=deltaF;
     }
 
-    *hp_amp[0] = htilde_p;
-    *hp_phase[0] = htilde_c;
     return XLAL_SUCCESS;
 
 }

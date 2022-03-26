@@ -35,7 +35,7 @@
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_rng.h>
 
-#include "LALSimInspiralOptimizedCoefficientsEccentricityFD.c"
+#include "InspiralOptimizedCoefficientsEccentricityFD.c"
 
 #define gamma (0.577215664901532860606512090)
 
@@ -53,8 +53,8 @@ int SimInspiralEccentricFD(COMPLEX16FrequencySeries **hptilde,
                            REAL8 e_min,
                            int phaseO);
 
-int SimInspiralEccentricFDAmpPhase(COMPLEX16FrequencySeries *(*hp_amp)[10],
-                                   COMPLEX16FrequencySeries *(*hp_phase)[10],
+int SimInspiralEccentricFDAmpPhase(REAL8FrequencySeries *(*hp_amp)[10],
+                                   REAL8FrequencySeries *(*hp_phase)[10],
                                    REAL8 phiRef,
                                    REAL8 deltaF,
                                    REAL8 m1_SI,

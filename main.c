@@ -17,19 +17,27 @@ int main(int argc, const char * argv[]) {
 
     COMPLEX16FrequencySeries *hptilde=NULL;
     COMPLEX16FrequencySeries *hctilde=NULL;
-    COMPLEX16FrequencySeries *hp_harm_series_amp[10]={};
-    COMPLEX16FrequencySeries *hp_harm_series_phase[10]={};
+    REAL8FrequencySeries *hp_harm_series_amp[10]={};
+    REAL8FrequencySeries *hp_harm_series_phase[10]={};
+    int j=1000;
 
     SimInspiralEccentricFD(&hptilde, &hctilde, phiRef, deltaF, m1*LAL_MSUN_SI, m2*LAL_MSUN_SI,
                            fStart, fEnd, i, Dl*1e6*LAL_PC_SI, inclination_azimuth, e_min, 7);
     SimInspiralEccentricFDAmpPhase(&hp_harm_series_amp, &hp_harm_series_phase, phiRef, deltaF, m1*LAL_MSUN_SI, m2*LAL_MSUN_SI,
                                    fStart, fEnd, i, Dl*1e6*LAL_PC_SI, inclination_azimuth, e_min);
 
-    complex double x0 = (hptilde->data->data[3333]);
-    complex double x1 = (hp_harm_series_amp[0]->data->data[3333]);
+    complex double x0 = (hptilde->data->data[j]);
     printf("%.15e + %.15ei\n", creal(x0), cimag(x0));
-    printf("%.15e + %.15ei", creal(x1), cimag(x1));
 
+    double a0, p0;
+    gsl_complex x0_= {0., 0.};
+    for(int lm=0;lm<10;lm++) {
+        a0 = (hp_harm_series_amp[lm]->data->data[j]);
+        p0 = (hp_harm_series_phase[lm]->data->data[j]);
+        x0_ = gsl_complex_add(x0_, gsl_complex_polar(a0, p0));
+        printf("(%.15e, %.15e)\n", a0, p0);
+    }
+    printf("%.15e + %.15ei\n", GSL_REAL(x0_), GSL_IMAG(x0_));
 
     return 0;
 }

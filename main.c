@@ -17,8 +17,8 @@ int main(int argc, const char * argv[]) {
 
     COMPLEX16FrequencySeries *hptilde=NULL;
     COMPLEX16FrequencySeries *hctilde=NULL;
-    REAL8FrequencySeries *hp_harm_series_amp[10]={};
-    REAL8FrequencySeries *hp_harm_series_phase[10]={};
+    REAL8FrequencySeries **hp_harm_series_amp=NULL;
+    REAL8FrequencySeries **hp_harm_series_phase=NULL;
     int j=1000;
 
     SimInspiralEccentricFD(&hptilde, &hctilde, phiRef, deltaF, m1*LAL_MSUN_SI, m2*LAL_MSUN_SI,

@@ -53,8 +53,8 @@ int SimInspiralEccentricFD(COMPLEX16FrequencySeries **hptilde,
                            REAL8 e_min,
                            int phaseO);
 
-int SimInspiralEccentricFDAmpPhase(REAL8FrequencySeries *(*hp_amp)[10],
-                                   REAL8FrequencySeries *(*hp_phase)[10],
+int SimInspiralEccentricFDAmpPhase(REAL8FrequencySeries ***hp_amp,
+                                   REAL8FrequencySeries ***hp_phase,
                                    REAL8 phiRef,
                                    REAL8 deltaF,
                                    REAL8 m1_SI,

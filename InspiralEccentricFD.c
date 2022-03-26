@@ -558,8 +558,8 @@ int SimInspiralEccentricFD(
 
 
 int SimInspiralEccentricFDAmpPhase(
-        REAL8FrequencySeries *(*hp_amp)[10],
-        REAL8FrequencySeries *(*hp_phase)[10],
+        REAL8FrequencySeries ***hp_amp,
+        REAL8FrequencySeries ***hp_phase,
         const REAL8 phiRef,                    /**< Orbital coalescence phase (rad) */
         const REAL8 deltaF,                    /**< Frequency resolution */
         const REAL8 m1_SI,                     /**< Mass of companion 1 (kg) */
@@ -622,6 +622,8 @@ int SimInspiralEccentricFDAmpPhase(
     n = (size_t) (f_max / deltaF + 1);
     XLALGPSAdd(&tC, -1 / deltaF);  /* coalesce at t=0 */
 
+    *hp_amp = (REAL8FrequencySeries **) malloc(sizeof(REAL8FrequencySeries *) * 10);
+    *hp_phase = (REAL8FrequencySeries **) malloc(sizeof(REAL8FrequencySeries *) * 10);
     for(int lm=0;lm<10;lm++){
 
         htilde_a = XLALCreateREAL8FrequencySeries("hp_amp(j=): FD waveform", &tC, 0.0, deltaF, &lalStrainUnit, n);

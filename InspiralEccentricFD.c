@@ -143,7 +143,7 @@ static double zeta_generic_re_plus(int k, double f, expnCoeffsEPC *ak) {
 }
 
 static double zeta_generic_re_cross(int k, double f, expnCoeffsEPC *ak) {
-   double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+    double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -188,7 +188,7 @@ static double zeta_generic_re_cross(int k, double f, expnCoeffsEPC *ak) {
 
 
 static double zeta_generic_im_plus(int k, double f, expnCoeffsEPC *ak) {
-   double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+    double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -232,7 +232,7 @@ static double zeta_generic_im_plus(int k, double f, expnCoeffsEPC *ak) {
 }
 
 static double zeta_generic_im_cross(int k, double f, expnCoeffsEPC *ak) {
-   double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
+    double k4, k5, k19, k19ov3, k19ov9, k19ov18, f1,f2,f3,f4,f5,f6,f7,f8;
     k4=f*f*f*f;
     k5=f*f*f*f*f;
     k19=k5*k5*k5*k4;
@@ -406,15 +406,9 @@ int SimInspiralEccentricFD(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
-        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
-        const int32_t phaseO                      /**< Twice PN phase order */
-	)
-
-  {
-
-    gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
-
-
+        const double e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+)
+{
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
     const double m = m1 + m2;
@@ -427,19 +421,19 @@ int SimInspiralEccentricFD(
     const double mchirp= pow(eta, 3./5.)*Mtotal;
     double shft, f_max;
     double f;
+
+    gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
     const double zr=0.;
     double Amplitude, zim, Phaseorder, pc_re_hplus, pc_im_hplus, pc_re_hcross, pc_im_hcross, re_hplus, im_hplus, re_hcross, im_hcross;
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
-
-    expnCoeffsEPC* ak_ptr = &ak;
-    EPCSetup( ak_ptr, m1, m2, fStart, i, inclination_azimuth, e_min);
+    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
 
 
     complex double *data_p = NULL;
     complex double *data_c = NULL;
-    double tC = -1. / deltaF;  /* coalesce at t=0 */
+    long tC = floor(-1. / deltaF * 1e9);  /* coalesce at t=0 */
 
     COMPLEX16FrequencySeries *htilde_p;
     COMPLEX16FrequencySeries *htilde_c;
@@ -470,74 +464,66 @@ int SimInspiralEccentricFD(
     if (!htilde_c) ERROR(PD_EFUNC, NULL);
 
 
-   /* extrinsic parameters*/
+    /* extrinsic parameters*/
     Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*MRSUN_SI/MTSUN_SI;
-    shft = TWOPI * tC;
+    shft = TWOPI * 1e-9 * ((double) tC);
 
-   jStart = (size_t) ceil(fStart / deltaF);
-   f = (double) jStart*deltaF;
-   data_p = htilde_p->data;
-   data_c = htilde_c->data;
+    jStart = (size_t) ceil(fStart / deltaF);
+    f = (double) jStart*deltaF;
+    data_p = htilde_p->data;
+    data_c = htilde_c->data;
 
-   /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
-    * Note that the functions zeta_real and zeta_im depend on several paramenters, including F_+ and F_x.
-    * Since zeta_real and zeta_im are linear function in the antenna pattern functions,
-    * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
+    /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
+     * Note that the functions zeta_real and zeta_im depend on several paramenters, including F_+ and F_x.
+     * Since zeta_real and zeta_im are linear function in the antenna pattern functions,
+     * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
 
-    for ( j=jStart;j<n;j++) {
-            switch (phaseO) {
-            case -1:
-            case 7:
-                    pc_re_hplus=0.;
-                    pc_im_hplus=0.;
-                    pc_re_hcross=0.;
-                    pc_im_hcross=0.;
-		    Phaseorder=0.;
+    for(j=jStart;j<n;j++){
+        pc_re_hplus=0.;
+        pc_im_hplus=0.;
+        pc_re_hcross=0.;
+        pc_im_hcross=0.;
+        Phaseorder=0.;
 
-                    for(int k=1; k<8; k++){
-                        Phaseorder+=-PhaseAccTaylorF2(k, f, &ak);
-                    }
+        for(int k=1; k<8; k++){
+            Phaseorder+=-PhaseAccTaylorF2(k, f, &ak);
+        }
 
-                    for(int lm=1;lm<11;lm++){
+        for(int lm=1;lm<11;lm++){
 
-                        zim=M_PI/4. + pow(((double)lm)/2.,8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
+            zim=M_PI/4. + pow(((double)lm)/2.,8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
 
-                        cphase = gsl_complex_rect (zr,zim);
+            cphase = gsl_complex_rect (zr,zim);
 
-                        czeta_FPlus = gsl_complex_rect (((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
+            czeta_FPlus = gsl_complex_rect (((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
 
-                        czeta_FCross=gsl_complex_rect (((double)zeta_generic_re_cross(lm, f, &ak)),((double)zeta_generic_im_cross(lm, f, &ak)));
+            czeta_FCross=gsl_complex_rect (((double)zeta_generic_re_cross(lm, f, &ak)),((double)zeta_generic_im_cross(lm, f, &ak)));
 
-                        exphase=gsl_complex_exp (cphase);
+            exphase=gsl_complex_exp (cphase);
 
-                        czeta_FPlus_times_exphase  = gsl_complex_mul(czeta_FPlus, exphase);
-                        czeta_FCross_times_exphase = gsl_complex_mul(czeta_FCross, exphase);
+            czeta_FPlus_times_exphase  = gsl_complex_mul(czeta_FPlus, exphase);
+            czeta_FCross_times_exphase = gsl_complex_mul(czeta_FCross, exphase);
 
-                        re_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FPlus_times_exphase);
-                        im_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FPlus_times_exphase);
+            re_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FPlus_times_exphase);
+            im_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FPlus_times_exphase);
 
-                        re_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FCross_times_exphase);
-                        im_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FCross_times_exphase);
+            re_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FCross_times_exphase);
+            im_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FCross_times_exphase);
 
 
-                        pc_re_hplus+=re_hplus;
-                        pc_im_hplus+=im_hplus;
+            pc_re_hplus+=re_hplus;
+            pc_im_hplus+=im_hplus;
 
-                        pc_re_hcross+=re_hcross;
-                        pc_im_hcross+=im_hcross;
-                    }
-                 break;
-                 default:
-                    ERROR(PD_ETYPE, "Invalid phase PN order");
+            pc_re_hcross+=re_hcross;
+            pc_im_hcross+=im_hcross;
         }
 
         /*Note that h(f)= FPlus*data_p + FCross*data_c, where the polarizations are given by:*/
-
         data_p[j] = Amplitude*pow(f,-7./6.)*(pc_re_hplus  + pc_im_hplus*1.0j);
         data_c[j] = Amplitude*pow(f,-7./6.)*(pc_re_hcross + pc_im_hcross*1.0j);
 
         f+=deltaF;
-}
+    }
 
     *hptilde = htilde_p;
     *hctilde = htilde_c;
@@ -559,7 +545,6 @@ int SimInspiralEccentricFDAmpPhase(
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
         const double e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
 )
-
 {
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
@@ -579,9 +564,7 @@ int SimInspiralEccentricFDAmpPhase(
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
-
-    expnCoeffsEPC* ak_ptr = &ak;
-    EPCSetup( ak_ptr, m1, m2, fStart, i, inclination_azimuth, e_min);
+    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
 
 
     double *data_a[10] = {};
@@ -611,10 +594,10 @@ int SimInspiralEccentricFDAmpPhase(
     *hp_amp_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);
     for(int lm=0;lm<10;lm++){
 
-        htilde_ap = CreateAmpPhaseFDWaveform(deltaF, n);
+        htilde_ap = CreateAmpPhaseFDWaveform(deltaF, n, lm+1);
         if (!htilde_ap) ERROR(PD_EFUNC, NULL);
 
-        (*hp_amp_phase)  [lm] = htilde_ap;
+        (*hp_amp_phase)[lm] = htilde_ap;
         data_a[lm] = ((*hp_amp_phase)[lm])->amp;
         data_p[lm] = ((*hp_amp_phase)[lm])->phase;
     }
@@ -631,7 +614,7 @@ int SimInspiralEccentricFDAmpPhase(
      * including F_+ and F_x. Since zeta_real and zeta_im are linear function in the antenna pattern functions,
      * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
 
-    for (j=jStart;j<n;j++) {
+    for(j=jStart;j<n;j++){
 
         Phaseorder=0.;
         for(int k=1; k<8; k++){

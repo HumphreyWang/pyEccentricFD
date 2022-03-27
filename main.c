@@ -20,8 +20,8 @@ int main(int argc, const char * argv[]) {
     AmpPhaseFDWaveform **hp_harm_series=NULL;
     int j=1000;
 
-    SimInspiralEccentricFD(&hptilde, &hctilde, phiRef, deltaF, m1*MSUN_SI, m2*MSUN_SI,
-                           fStart, fEnd, i, Dl*1e6*PC_SI, inclination_azimuth, e_min, 7);
+    SimInspiralEccentricFD(&hptilde, &hctilde, phiRef, deltaF, m1 * MSUN_SI, m2 * MSUN_SI,
+                           fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min);
     SimInspiralEccentricFDAmpPhase(&hp_harm_series, phiRef, deltaF, m1*MSUN_SI, m2*MSUN_SI,
                                    fStart, fEnd, i, Dl*1e6*PC_SI, inclination_azimuth, e_min);
 

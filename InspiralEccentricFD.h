@@ -46,11 +46,13 @@ typedef struct tagAmpPhaseFDWaveform {
     double* phase;
     double deltaF;
     size_t length;
+    unsigned int harmonic;  // : 4
 } AmpPhaseFDWaveform;
 
 AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
         double deltaF,
-        size_t length
+        size_t length,
+        unsigned int harmonic
 );
 
 typedef enum {
@@ -79,8 +81,7 @@ int SimInspiralEccentricFD(COMPLEX16FrequencySeries **hptilde,
                            double i,
                            double r,
                            double inclination_azimuth,
-                           double e_min,
-                           int phaseO);
+                           double e_min);
 
 int SimInspiralEccentricFDAmpPhase(AmpPhaseFDWaveform ***hp_amp,
                                    double phiRef,

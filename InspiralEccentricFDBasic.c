@@ -34,7 +34,8 @@ COMPLEX16FrequencySeries *CreateCOMPLEX16FrequencySeries(
 
 AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
         double deltaF,
-        size_t length
+        size_t length,
+        unsigned int harmonic
 ){
     AmpPhaseFDWaveform* wf = (AmpPhaseFDWaveform*)malloc(sizeof(AmpPhaseFDWaveform));
     wf->deltaF = deltaF;
@@ -42,6 +43,7 @@ AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
     wf->length = length;
     wf->amp = (double*) malloc(sizeof(double) * length);
     wf->phase = (double*) malloc(sizeof(double) * length);
+    wf->harmonic = harmonic;
     if ((wf->amp == NULL) || (wf->phase == NULL) )
         ERROR(PD_ENOMEM, "Failed to allocated one of the data arrays.");
 

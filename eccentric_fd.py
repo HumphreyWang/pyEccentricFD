@@ -1,10 +1,10 @@
 # coding: utf-8
+# In[0]:
 
 """connect to EccFD library"""
 import os
 import numpy as np
 from ctypes import cdll, Structure, POINTER, byref, c_double, c_size_t, c_uint
-# from pycbc.types import FrequencySeries
 
 _dirname = os.path.dirname(__file__)
 if _dirname == '':
@@ -16,7 +16,31 @@ MSUN_SI = 1.988546954961461467461011951140572744e30
 MPC_SI = 3.085677581491367278913937957796471611e22
 
 
-class EccFDAmpPhase(Structure):
+# In[1]: TODO: how to deal with the C complex type???
+
+# class _EccFDWaveform(Structure):
+#     _fields_ = [("data", c_void_p),
+#                 ("name", c_char_p),
+#                 ("deltaF", c_double),
+#                 ("length", c_size_t),
+#                 ]
+
+
+# def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
+#                         coa_phase=0., inclination=0., long_asc_nodes=0.,
+#                         delta_f=None, f_lower=None, f_final=0.):
+#     f = _rlib.SimInspiralEccentricFD
+#     # **hptilde, **hctilde, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
+#     f.argtypes = [c_void_p, c_void_p, c_double, c_double, c_double, c_double, c_double,
+#                   c_double, c_double, c_double, c_double, c_double]
+#     _ = f(byref(hptilde), byref(hctilde), coa_phase, delta_f, mass1, mass2,
+#           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity)
+#     pass
+
+
+# In[2]:
+
+class _EccFDAmpPhase(Structure):
     _fields_ = [("amp", POINTER(c_double)),
                 ("phase", POINTER(c_double)),
                 ("deltaF", c_double),
@@ -25,48 +49,38 @@ class EccFDAmpPhase(Structure):
                 ]
 
 
-def gen(**params):
-
-    delta_f = params['delta_f']
-    fend = 1000 if 'f_final' not in params else params['f_final']
-    if fend == 0:
-        fend = 1000
-    flow = params['f_lower']
-
-    m1 = params['mass1'] * MSUN_SI
-    m2 = params['mass2'] * MSUN_SI
-    inc = params['inclination']
-    e_min = params['eccentricity']
-    inclination_azimuth = params['long_asc_nodes']
-    phi_ref = params['coa_phase']
-    dl = params['distance'] * MPC_SI
-
-    hp_amp_phase = POINTER(POINTER(EccFDAmpPhase))()
+def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
+                         coa_phase=0., inclination=0., long_asc_nodes=0.,
+                         delta_f=None, f_lower=None, f_final=0.):
+    hp_amp_phase = POINTER(POINTER(_EccFDAmpPhase))()
     f = _rlib.SimInspiralEccentricFDAmpPhase
-    f.argtypes = [POINTER(POINTER(POINTER(EccFDAmpPhase))), c_double, c_double, c_double, c_double,
-                  c_double, c_double, c_double, c_double, c_double, c_double]
-    _ = f(byref(hp_amp_phase), phi_ref, delta_f, m1, m2,
-          flow, fend, inc, dl, inclination_azimuth, e_min)
+    # ***hp_amp_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
+    f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
+                  c_double, c_double, c_double, c_double, c_double,
+                  c_double, c_double, c_double, c_double, c_double]
+    _ = f(byref(hp_amp_phase), coa_phase, delta_f, mass1, mass2,
+          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity)
     list_of_hp = hp_amp_phase[:10]
     length = list_of_hp[0].contents.length
-    hp_amp_phase_dict = tuple((np.array(list_of_hp[j].contents.amp[:length]),
-                               np.array(list_of_hp[j].contents.phase[:length])) for j in range(10))
-    return hp_amp_phase_dict
+    return tuple((np.array(list_of_hp[j].contents.amp[:length]),
+                  np.array(list_of_hp[j].contents.phase[:length])) for j in range(10))
 
+
+# In[3]:
 
 if __name__ == '__main__':
     from time import time, strftime
     para = {'delta_f': 0.01,
             'f_final': 200,
             'f_lower': 10,
-            'mass1': 10,
-            'mass2': 10,
+            'mass1': 10 * MSUN_SI,
+            'mass2': 10 * MSUN_SI,
             'inclination': 0.23,
             'eccentricity': 0.4,
             'long_asc_nodes': 0.23,
             'coa_phase': 0,
-            'distance': 100}
+            'distance': 100 * MPC_SI}
     start_time = time()
     print(strftime("%Y-%m-%d %H:%M:%S"))
-    hp_ap = gen(**para)
+    hp_ap = gen_ecc_fd_amp_phase(**para)
     print(strftime("%Y-%m-%d %H:%M:%S"), f'Finished in {time() - start_time: .5f}s', '\n')

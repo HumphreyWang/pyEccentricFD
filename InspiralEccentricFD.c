@@ -474,7 +474,7 @@ int SimInspiralEccentricFD(
     data_c = htilde_c->data;
 
     /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
-     * Note that the functions zeta_real and zeta_im depend on several paramenters, including F_+ and F_x.
+     * Note that the functions zeta_real and zeta_im depend on several parameters, including F_+ and F_x.
      * Since zeta_real and zeta_im are linear function in the antenna pattern functions,
      * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
 
@@ -610,7 +610,7 @@ int SimInspiralEccentricFDAmpPhase(
     f = (double) jStart*deltaF;
 
     /* In order to decompose the waveform in the form h = F_+ h_+ + F_x h_x we decompose the amplitude function using a two basis decomposition.
-     * Note that the functions zeta_real and zeta_im depend on several paramenters,
+     * Note that the functions zeta_real and zeta_im depend on several parameters,
      * including F_+ and F_x. Since zeta_real and zeta_im are linear function in the antenna pattern functions,
      * czeta_FPlus and czeta_FCross are used to extract F_+ and F_x from the waveform amplitude*/
 

@@ -61,8 +61,7 @@ typedef enum {
     PD_EDOM = 33,        /**< Input domain error */
     PD_EFAULT = 14,      /**< Invalid pointer */
     PD_EFUNC = 1024,     /**< Internal function call failed bit: "or" this with existing error number */
-    PD_ENOMEM = 12,       /**< Memory allocation error */
-    PD_ETYPE = 132,      /**< Wrong or unknown type */
+    PD_ENOMEM = 12,      /**< Memory allocation error */
 } ERROR_type;
 
 const char *ErrorString(int code);

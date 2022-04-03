@@ -19,7 +19,8 @@ MPC_SI = 3.085677581491367278913937957796471611e22
 
 class _EccFDWaveform(Structure):
     """Note: The 'data' actually should be POINTER(c_complex), but ctypes do not have that,
-    so we finally use buffer to restore the data, then any types of number in POINTER() is OK"""
+    so we finally use buffer to restore the data, then any types of number in POINTER() is OK.
+    Additional Note: Now we are using numpy `ndarray.view` here, so POINTER(c_double) is required."""
     _fields_ = [("data_p", POINTER(c_double)),
                 ("data_c", POINTER(c_double)),
                 ("deltaF", c_double),
@@ -30,9 +31,9 @@ class _EccFDWaveform(Structure):
 def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
                         coa_phase=0., inclination=0., long_asc_nodes=0.,
                         delta_f=None, f_lower=None, f_final=0.):
-    """Thanks to https://stackoverflow.com/questions/4355524,
-    although I haven't totally figured out the py_object part"""
-    from ctypes import pythonapi, py_object
+    """Note: Thanks to https://stackoverflow.com/questions/4355524,
+    although I haven't totally figured out the py_object part.
+    Additional Note: Thanks to https://stackoverflow.com/questions/5658047, that is SO BRILLIANT!"""
 
     f = _rlib.SimInspiralEccentricFD
     htilde = POINTER(_EccFDWaveform)()
@@ -43,12 +44,15 @@ def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
     _ = f(byref(htilde), coa_phase, delta_f, mass1, mass2,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity)
 
-    buffer_from_memory = pythonapi.PyMemoryView_FromMemory
-    buffer_from_memory.restype = py_object
-    buffer_hp = buffer_from_memory(htilde.contents.data_p, htilde.contents.length * 16)
-    buffer_hc = buffer_from_memory(htilde.contents.data_c, htilde.contents.length * 16)
-    return (np.frombuffer(buffer_hp, dtype=np.complex128),
-            np.frombuffer(buffer_hc, dtype=np.complex128))
+    # from ctypes import pythonapi, py_object
+    # buffer_from_memory = pythonapi.PyMemoryView_FromMemory
+    # buffer_from_memory.restype = py_object
+    # buffer_hp = buffer_from_memory(htilde.contents.data_p, htilde.contents.length * 16)
+    # buffer_hc = buffer_from_memory(htilde.contents.data_c, htilde.contents.length * 16)
+    # return (np.frombuffer(buffer_hp, dtype=np.complex128), np.frombuffer(buffer_hc, dtype=np.complex128))
+    hp_, hc_ = (np.array(htilde.contents.data_p[:htilde.contents.length*2]),
+                np.array(htilde.contents.data_c[:htilde.contents.length*2]))
+    return hp_.view(np.complex128), hc_.view(np.complex128)
 
 
 # In[2]:

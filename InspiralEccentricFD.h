@@ -28,22 +28,23 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef struct tagCOMPLEX16FrequencySeries {
-    double complex *data;
-    char *name;
+typedef struct tagComplex16FDWaveform {
+    double complex *data_p;
+    double complex *data_c;
     double deltaF;
     size_t length;
-} COMPLEX16FrequencySeries;
+} Complex16FDWaveform;
 
-COMPLEX16FrequencySeries *CreateCOMPLEX16FrequencySeries(
-        const char *name,
+Complex16FDWaveform *CreateComplex16FDWaveform(
         double deltaF,
         size_t length
 );
 
 typedef struct tagAmpPhaseFDWaveform {
-    double* amp;
-    double* phase;
+    double* amp_p;
+    double* pha_p;
+    double* amp_c;
+    double* pha_c;
     double deltaF;
     size_t length;
     unsigned int harmonic;  // : 4
@@ -69,8 +70,7 @@ void ERROR(ERROR_type e, char *errstr);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SimInspiralEccentricFD(COMPLEX16FrequencySeries **hptilde,
-                           COMPLEX16FrequencySeries **hctilde,
+int SimInspiralEccentricFD(Complex16FDWaveform **htilde,
                            double phiRef,
                            double deltaF,
                            double m1_SI,
@@ -82,7 +82,7 @@ int SimInspiralEccentricFD(COMPLEX16FrequencySeries **hptilde,
                            double inclination_azimuth,
                            double e_min);
 
-int SimInspiralEccentricFDAmpPhase(AmpPhaseFDWaveform ***hp_amp,
+int SimInspiralEccentricFDAmpPhase(AmpPhaseFDWaveform ***h_amp_phase,
                                    double phiRef,
                                    double deltaF,
                                    double m1_SI,

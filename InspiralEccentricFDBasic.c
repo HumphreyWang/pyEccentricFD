@@ -10,25 +10,21 @@
 #endif
 
 
-COMPLEX16FrequencySeries *CreateCOMPLEX16FrequencySeries(
-        const char *name,
+Complex16FDWaveform *CreateComplex16FDWaveform(
         double deltaF,
         size_t length
 ){
-    COMPLEX16FrequencySeries* fs = (COMPLEX16FrequencySeries*)malloc(sizeof(COMPLEX16FrequencySeries));
-
-    size_t name_length = strlen(name);
-    fs->name = (char*)malloc((name_length+1) * sizeof(char));
-    strcpy(fs->name, name);
-
+    Complex16FDWaveform* fs = (Complex16FDWaveform*)malloc(sizeof(Complex16FDWaveform));
     fs->deltaF = deltaF;
 
     fs->length = length;
-    fs->data = (double complex *)malloc(sizeof(double complex) * length);
-    if (fs->data == NULL)
+    fs->data_p = (double complex *)malloc(sizeof(double complex) * length);
+    fs->data_c = (double complex *)malloc(sizeof(double complex) * length);
+    if ((fs->data_p == NULL) || (fs->data_c == NULL))
         ERROR(PD_ENOMEM, "Failed to allocated data array.");
 
-    memset(fs->data, 0, sizeof(double complex) * length);
+    memset(fs->data_p, 0, sizeof(double complex) * length);
+    memset(fs->data_c, 0, sizeof(double complex) * length);
     return fs;
 }
 
@@ -41,14 +37,18 @@ AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
     wf->deltaF = deltaF;
 
     wf->length = length;
-    wf->amp = (double*) malloc(sizeof(double) * length);
-    wf->phase = (double*) malloc(sizeof(double) * length);
+    wf->amp_p = (double*) malloc(sizeof(double) * length);
+    wf->pha_p = (double*) malloc(sizeof(double) * length);
+    wf->amp_c = (double*) malloc(sizeof(double) * length);
+    wf->pha_c = (double*) malloc(sizeof(double) * length);
     wf->harmonic = harmonic;
-    if ((wf->amp == NULL) || (wf->phase == NULL) )
+    if ((wf->amp_p == NULL) || (wf->pha_p == NULL) || (wf->amp_c == NULL) || (wf->pha_c == NULL))
         ERROR(PD_ENOMEM, "Failed to allocated one of the data arrays.");
 
-    memset(wf->amp, 0, sizeof(double) * length);
-    memset(wf->phase, 0, sizeof(double) * length);
+    memset(wf->amp_p, 0, sizeof(double) * length);
+    memset(wf->pha_p, 0, sizeof(double) * length);
+    memset(wf->amp_c, 0, sizeof(double) * length);
+    memset(wf->pha_c, 0, sizeof(double) * length);
     return wf;
 }
 

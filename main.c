@@ -14,15 +14,16 @@ int main(int argc, const char * argv[]) {
     double fStart = strtod(argv[8], NULL);
     double fEnd = strtod(argv[9], NULL);
     double deltaF = strtod(argv[10], NULL);
+    double space_obs_T = strtod(argv[11], NULL);
 
     Complex16FDWaveform *htilde=NULL;
     AmpPhaseFDWaveform **h_harm_series=NULL;
     int j=1000;
 
     SimInspiralEccentricFD(&htilde, phiRef, deltaF, m1 * MSUN_SI, m2 * MSUN_SI,
-                           fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min);
+                           fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
     SimInspiralEccentricFDAmpPhase(&h_harm_series, phiRef, deltaF, m1 * MSUN_SI, m2 * MSUN_SI,
-                                   fStart, fEnd, i, Dl*1e6*PC_SI, inclination_azimuth, e_min);
+                                   fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
 
     complex double x0 = (htilde->data_p[j]);
     printf("%.15e + %.15ei\n", creal(x0), cimag(x0));

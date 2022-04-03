@@ -408,7 +408,8 @@ int SimInspiralEccentricFD(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
-        const double e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double space_obs_T                /**< Observation time (Only required for space detector) (s) */
 )
 {
     const double m1 = m1_SI / MSUN_SI;
@@ -419,9 +420,8 @@ int SimInspiralEccentricFD(
     const double piM = PI * Mtotal;
     const double vISCO = 1. / sqrt(6.);
     const double fISCO = vISCO * vISCO * vISCO / piM;
-    const double fupper = 2.*fISCO;
     const double mchirp= pow(eta, 3./5.)*Mtotal;
-    double shft, f_max;
+    double shft, f_max, fupper = 2.*fISCO, f_yr=0., heavy;
     double f;
 
     gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
@@ -446,6 +446,8 @@ int SimInspiralEccentricFD(
     if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
     if (fStart <= 0) ERROR(PD_EDOM, NULL);
     if (r <= 0) ERROR(PD_EDOM, NULL);
+    if (fEnd < 0) ERROR(PD_EDOM, NULL);
+    if (space_obs_T < 0) ERROR(PD_EDOM, NULL);
 
 
     /* allocate htilde_p and htilde_c*/
@@ -454,7 +456,10 @@ int SimInspiralEccentricFD(
     else // End at user-specified freq.
         f_max = fEnd;
     n = (size_t) (f_max / deltaF + 1);
-
+    if (space_obs_T != 0.){
+        fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
+        f_yr = pow(5., 3./8.)/(8*PI) * pow(mchirp, -5./8.) * pow(space_obs_T, -3./8.);
+    }
 
     htilde_ = CreateComplex16FDWaveform(deltaF, n);
     if (!htilde_) ERROR(PD_EFUNC, NULL);
@@ -500,16 +505,14 @@ int SimInspiralEccentricFD(
             czeta_FPlus_times_exphase  = gsl_complex_mul(czeta_FPlus, exphase);
             czeta_FCross_times_exphase = gsl_complex_mul(czeta_FCross, exphase);
 
-            re_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FPlus_times_exphase);
-            im_hplus=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FPlus_times_exphase);
-
-            re_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_REAL (czeta_FCross_times_exphase);
-            im_hcross=Heaviside(((double)lm)*fupper-2.*f)*pow(((double)lm)/2., 2./3.)*GSL_IMAG (czeta_FCross_times_exphase);
-
+            heavy = Heaviside(((double)lm)*fupper-2.*f) * Heaviside(2.*f-((double)lm)*f_yr);
+            re_hplus = heavy * pow(((double)lm)/2., 2./3.) * GSL_REAL(czeta_FPlus_times_exphase);
+            im_hplus = heavy * pow(((double)lm)/2., 2./3.) * GSL_IMAG(czeta_FPlus_times_exphase);
+            re_hcross= heavy * pow(((double)lm)/2., 2./3.) * GSL_REAL(czeta_FCross_times_exphase);
+            im_hcross= heavy * pow(((double)lm)/2., 2./3.) * GSL_IMAG(czeta_FCross_times_exphase);
 
             pc_re_hplus+=re_hplus;
             pc_im_hplus+=im_hplus;
-
             pc_re_hcross+=re_hcross;
             pc_im_hcross+=im_hcross;
         }
@@ -537,7 +540,8 @@ int SimInspiralEccentricFDAmpPhase(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
-        const double e_min                      /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double space_obs_T                /**< Observation time (Only required for space detector) (s) */
 )
 {
     const double m1 = m1_SI / MSUN_SI;
@@ -548,9 +552,8 @@ int SimInspiralEccentricFDAmpPhase(
     const double piM = PI * Mtotal;
     const double vISCO = 1. / sqrt(6.);
     const double fISCO = vISCO * vISCO * vISCO / piM;
-    const double fupper = 2.*fISCO;
     const double mchirp= pow(eta, 3./5.)*Mtotal;
-    double shft, f_max;
+    double shft, f_max, fupper = 2.*fISCO, f_yr=0., heavy;
     double f;
 
     gsl_complex czeta_FPlus, czeta_FCross;
@@ -574,6 +577,8 @@ int SimInspiralEccentricFDAmpPhase(
     if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
     if (fStart <= 0) ERROR(PD_EDOM, NULL);
     if (r <= 0) ERROR(PD_EDOM, NULL);
+    if (fEnd < 0) ERROR(PD_EDOM, NULL);
+    if (space_obs_T < 0) ERROR(PD_EDOM, NULL);
 
 
     /* allocate htilde_p and htilde_c*/
@@ -582,6 +587,10 @@ int SimInspiralEccentricFDAmpPhase(
     else // End at user-specified freq.
         f_max = fEnd;
     n = (size_t) (f_max / deltaF + 1);
+    if (space_obs_T != 0.){
+        fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
+        f_yr = pow(5., 3./8.)/(8*PI) * pow(mchirp, -5./8.) * pow(space_obs_T, -3./8.);
+    }
 
     *h_amp_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);
     for(int lm=0;lm<10;lm++){
@@ -625,11 +634,12 @@ int SimInspiralEccentricFDAmpPhase(
             czeta_FPlus_arg  = gsl_complex_arg(czeta_FPlus);
             czeta_FCross_abs = gsl_complex_abs(czeta_FCross);
             czeta_FCross_arg = gsl_complex_arg(czeta_FCross);
-            // TODO: we actually should set Heaviside funcs like Eq.(5.6), but is that necessary?
-            hplus_a = Heaviside(((double)lm)*fupper - 2.*f) * pow(((double)lm)/2., 2./3.) * czeta_FPlus_abs;
-            hplus_p = Heaviside(((double)lm)*fupper - 2.*f) * (phase_tay + czeta_FPlus_arg);
-            hcross_a= Heaviside(((double)lm)*fupper - 2.*f) * pow(((double)lm)/2., 2./3.) * czeta_FCross_abs;
-            hcross_p= Heaviside(((double)lm)*fupper - 2.*f) * (phase_tay + czeta_FCross_arg);
+            // Set Heaviside funcs like Eq.(5.5) & Eq.(5.6)
+            heavy = Heaviside(((double)lm)*fupper-2.*f) * Heaviside(2.*f-((double)lm)*f_yr);
+            hplus_a = heavy * pow(((double)lm)/2., 2./3.) * czeta_FPlus_abs;
+            hplus_p = heavy * (phase_tay + czeta_FPlus_arg);
+            hcross_a= heavy * pow(((double)lm)/2., 2./3.) * czeta_FCross_abs;
+            hcross_p= heavy * (phase_tay + czeta_FCross_arg);
 
             data_p_a[lm-1][j] = Amplitude*pow(f, -7./6.)*hplus_a;
             data_p_p[lm-1][j] = hplus_p;

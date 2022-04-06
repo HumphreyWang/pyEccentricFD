@@ -435,7 +435,7 @@ int SimInspiralEccentricFD(
 
     complex double *data_p = NULL;
     complex double *data_c = NULL;
-    double tC = -1. / deltaF;  /* coalesce at t=0 */
+    double tC = 0.;  // coalesce at t=0, FIXME: Why `lal` use -1. / deltaF ?
 
     Complex16FDWaveform *htilde_;
 
@@ -566,7 +566,7 @@ int SimInspiralEccentricFDAmpPhase(
 
     double *data_p_a[10] = {}, *data_p_p[10] = {};
     double *data_c_a[10] = {}, *data_c_p[10] = {};
-    double tC = -1. / deltaF;  /* coalesce at t=0 */
+    double tC = 0.;  // coalesce at t=0, why `lal` use -1. / deltaF ?
 
     AmpPhaseFDWaveform *htilde_ap;
 

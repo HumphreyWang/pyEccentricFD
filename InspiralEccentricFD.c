@@ -556,16 +556,16 @@ int SimInspiralEccentricFDAmpPhase(
     double shft, f_max, fupper = 2.*fISCO, f_yr=0., heavy;
     double f;
 
-    gsl_complex czeta_FPlus, czeta_FCross;
-    double Amplitude, phase_tay, Phaseorder, hplus_a, hplus_p, hcross_a, hcross_p, czeta_FPlus_abs, czeta_FPlus_arg, czeta_FCross_abs, czeta_FCross_arg;
+    complex double czeta_FPlus, czeta_FCross, hplus_a, hcross_a;
+    double Amplitude, phase_tay, Phaseorder, h_phase;
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
     EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
 
 
-    double *data_p_a[10] = {}, *data_p_p[10] = {};
-    double *data_c_a[10] = {}, *data_c_p[10] = {};
+    complex double *data_p_a[10] = {}, *data_c_a[10] = {};
+    double *data_pha[10] = {};
     double tC = 0.;  // coalesce at t=0, why `lal` use -1. / deltaF ?
 
     AmpPhaseFDWaveform *htilde_ap;
@@ -600,9 +600,8 @@ int SimInspiralEccentricFDAmpPhase(
 
         (*h_amp_phase)[lm] = htilde_ap;
         data_p_a[lm] = ((*h_amp_phase)[lm])->amp_p;
-        data_p_p[lm] = ((*h_amp_phase)[lm])->pha_p;
         data_c_a[lm] = ((*h_amp_phase)[lm])->amp_c;
-        data_c_p[lm] = ((*h_amp_phase)[lm])->pha_c;
+        data_pha[lm] = ((*h_amp_phase)[lm])->phase;
     }
 
     /* extrinsic parameters*/
@@ -626,25 +625,26 @@ int SimInspiralEccentricFDAmpPhase(
             // Eq.(4.28)
             phase_tay = M_PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
             // Eq.(4.20)
-            czeta_FPlus = gsl_complex_rect(((double)zeta_generic_re_plus(lm, f, &ak)),((double)zeta_generic_im_plus(lm, f, &ak)));
-            czeta_FCross= gsl_complex_rect(((double)zeta_generic_re_cross(lm, f, &ak)),((double)zeta_generic_im_cross(lm, f, &ak)));
+            czeta_FPlus = zeta_generic_re_plus(lm, f, &ak) + 1.j * zeta_generic_im_plus(lm, f, &ak);
+            czeta_FCross= zeta_generic_re_cross(lm, f, &ak)+ 1.j * zeta_generic_im_cross(lm, f, &ak);
+
+            /* Note: You may wonder why we deprecate this part:
+             *       `phase_tay` here is the physically real PN Fourier phase, although czeta is complex.
+             *       Since the phase is independent of +&x, we only save it once for each harmonic. */
             // Eq.(4.22)
             //czeta_FPlus_arg  = atan2(GSL_IMAG(czeta_FPlus), GSL_REAL(czeta_FPlus));
-            czeta_FPlus_abs  = gsl_complex_abs(czeta_FPlus);
-            czeta_FPlus_arg  = gsl_complex_arg(czeta_FPlus);
-            czeta_FCross_abs = gsl_complex_abs(czeta_FCross);
-            czeta_FCross_arg = gsl_complex_arg(czeta_FCross);
+            //czeta_FPlus_abs  = gsl_complex_abs(czeta_FPlus);
+            //czeta_FPlus_arg  = gsl_complex_arg(czeta_FPlus);
+
             // Set Heaviside funcs like Eq.(5.5) & Eq.(5.6)
             heavy = Heaviside(((double)lm)*fupper-2.*f) * Heaviside(2.*f-((double)lm)*f_yr);
-            hplus_a = heavy * pow(((double)lm)/2., 2./3.) * czeta_FPlus_abs;
-            hplus_p = heavy * (phase_tay + czeta_FPlus_arg);
-            hcross_a= heavy * pow(((double)lm)/2., 2./3.) * czeta_FCross_abs;
-            hcross_p= heavy * (phase_tay + czeta_FCross_arg);
+            hplus_a = heavy * pow(((double)lm)/2., 2./3.) * czeta_FPlus;
+            hcross_a= heavy * pow(((double)lm)/2., 2./3.) * czeta_FCross;
+            h_phase = heavy * phase_tay;
 
             data_p_a[lm-1][j] = Amplitude*pow(f, -7./6.)*hplus_a;
-            data_p_p[lm-1][j] = hplus_p;
             data_c_a[lm-1][j] = Amplitude*pow(f, -7./6.)*hcross_a;
-            data_c_p[lm-1][j] = hcross_p;
+            data_pha[lm-1][j] = h_phase;
         }
 
         f+=deltaF;

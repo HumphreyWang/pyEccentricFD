@@ -26,17 +26,22 @@ int main(int argc, const char * argv[]) {
                                    fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
 
     complex double x0 = (htilde->data_p[j]);
+    complex double x1 = (htilde->data_c[j]);
     printf("%.15e + %.15ei\n", creal(x0), cimag(x0));
+    printf("%.15e + %.15ei\n", creal(x1), cimag(x1));
 
-    double a0, p0;
-    gsl_complex x0_= {0., 0.};
+    complex double a0, a1, x0_=0.j, x1_=0.j;
+    double p0;
     for(int lm=0;lm<10;lm++) {
         a0 = (h_harm_series[lm]->amp_p[j]);
-        p0 = (h_harm_series[lm]->pha_p[j]);
-        x0_ = gsl_complex_add(x0_, gsl_complex_polar(a0, p0));
-        printf("(%.15e, %.15e)\n", a0, p0);
+        a1 = (h_harm_series[lm]->amp_c[j]);
+        p0 = (h_harm_series[lm]->phase[j]);
+        x0_ += a0 * cexp(p0*1.j);
+        x1_ += a1 * cexp(p0*1.j);
+        printf("(%.15e, %.15e)\n", cabs(a0), p0);
     }
-    printf("%.15e + %.15ei\n", GSL_REAL(x0_), GSL_IMAG(x0_));
+    printf("%.15e + %.15ei\n", creal(x0_), cimag(x0_));
+    printf("%.15e + %.15ei\n", creal(x1_), cimag(x1_));
 
     return 0;
 }

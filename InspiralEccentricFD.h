@@ -29,8 +29,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef struct tagComplex16FDWaveform {
-    double complex *data_p;
-    double complex *data_c;
+    double complex * data_p;
+    double complex * data_c;
     double deltaF;
     size_t length;
 } Complex16FDWaveform;
@@ -41,10 +41,9 @@ Complex16FDWaveform *CreateComplex16FDWaveform(
 );
 
 typedef struct tagAmpPhaseFDWaveform {
-    double* amp_p;
-    double* pha_p;
-    double* amp_c;
-    double* pha_c;
+    double complex * amp_p;
+    double complex * amp_c;
+    double * phase;
     double deltaF;
     size_t length;
     unsigned int harmonic;  // : 4

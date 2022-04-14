@@ -37,18 +37,16 @@ AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
     wf->deltaF = deltaF;
 
     wf->length = length;
-    wf->amp_p = (double*) malloc(sizeof(double) * length);
-    wf->pha_p = (double*) malloc(sizeof(double) * length);
-    wf->amp_c = (double*) malloc(sizeof(double) * length);
-    wf->pha_c = (double*) malloc(sizeof(double) * length);
+    wf->amp_p = (double complex *) malloc(sizeof(double complex) * length);
+    wf->amp_c = (double complex *) malloc(sizeof(double complex) * length);
+    wf->phase = (double*) malloc(sizeof(double) * length);
     wf->harmonic = harmonic;
-    if ((wf->amp_p == NULL) || (wf->pha_p == NULL) || (wf->amp_c == NULL) || (wf->pha_c == NULL))
+    if ((wf->amp_p == NULL) || (wf->amp_c == NULL) || (wf->phase == NULL))
         ERROR(PD_ENOMEM, "Failed to allocated one of the data arrays.");
 
-    memset(wf->amp_p, 0, sizeof(double) * length);
-    memset(wf->pha_p, 0, sizeof(double) * length);
-    memset(wf->amp_c, 0, sizeof(double) * length);
-    memset(wf->pha_c, 0, sizeof(double) * length);
+    memset(wf->amp_p, 0, sizeof(double complex) * length);
+    memset(wf->amp_c, 0, sizeof(double complex) * length);
+    memset(wf->phase, 0, sizeof(double) * length);
     return wf;
 }
 

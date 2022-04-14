@@ -21,8 +21,8 @@ class _EccFDWaveform(Structure):
     """Note: The 'data' actually should be POINTER(c_complex), but ctypes do not have that,
     so we finally use buffer to restore the data, then any types of number in POINTER() is OK.
     Additional Note: Now we are using numpy `ndarray.view` here, so POINTER(c_double) is required."""
-    _fields_ = [("data_p", POINTER(c_double)),
-                ("data_c", POINTER(c_double)),
+    _fields_ = [("data_p", POINTER(c_double)),  # complex double
+                ("data_c", POINTER(c_double)),  # complex double
                 ("deltaF", c_double),
                 ("length", c_size_t),
                 ]
@@ -57,10 +57,9 @@ def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
 # In[2]:
 
 class _EccFDAmpPhase(Structure):
-    _fields_ = [("amp_p", POINTER(c_double)),
-                ("pha_p", POINTER(c_double)),
-                ("amp_c", POINTER(c_double)),
-                ("pha_c", POINTER(c_double)),
+    _fields_ = [("amp_p", POINTER(c_double)),  # complex double
+                ("amp_c", POINTER(c_double)),  # complex double
+                ("phase", POINTER(c_double)),
                 ("deltaF", c_double),
                 ("length", c_size_t),
                 ("harmonic", c_uint),
@@ -80,11 +79,11 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
     list_of_h = h_amp_phase[:10]
     length = list_of_h[0].contents.length
-    hp_ = tuple((np.array(list_of_h[j].contents.amp_p[:length]),
-                 np.array(list_of_h[j].contents.pha_p[:length])) for j in range(10))
-    hc_ = tuple((np.array(list_of_h[j].contents.amp_c[:length]),
-                 np.array(list_of_h[j].contents.pha_c[:length])) for j in range(10))
-    return hp_, hc_
+    amp_p = tuple(np.array(list_of_h[j].contents.amp_p[:length*2]) for j in range(10))
+    amp_c = tuple(np.array(list_of_h[j].contents.amp_c[:length*2]) for j in range(10))
+    return tuple((amp_p[j].view(np.complex128),
+                  amp_c[j].view(np.complex128),
+                  np.array(list_of_h[j].contents.phase[:length])) for j in range(10))
 
 
 # In[3]:
@@ -104,6 +103,6 @@ if __name__ == '__main__':
             'obs_time': 365*24*3600}
     start_time = time()
     print(strftime("%Y-%m-%d %H:%M:%S"))
-    hp_ap, hc_ap = gen_ecc_fd_amp_phase(**para)
+    h_ap = gen_ecc_fd_amp_phase(**para)
     hp, hc = gen_ecc_fd_waveform(**para)
     print(strftime("%Y-%m-%d %H:%M:%S"), f'Finished in {time() - start_time: .5f}s', '\n')

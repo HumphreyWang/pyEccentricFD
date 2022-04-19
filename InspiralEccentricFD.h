@@ -95,4 +95,17 @@ int SimInspiralEccentricFDAmpPhase(AmpPhaseFDWaveform ***h_amp_phase,
                                    double e_min,
                                    double space_obs_T);
 
+int SimInspiralEccentricFDAndPhase(AmpPhaseFDWaveform ***h_and_phase,
+                                   double phiRef,
+                                   double deltaF,
+                                   double m1_SI,
+                                   double m2_SI,
+                                   double fStart,
+                                   double fEnd,
+                                   double i,
+                                   double r,
+                                   double inclination_azimuth,
+                                   double e_min,
+                                   double space_obs_T);
+
 #endif //_INSPIRALECCENTRICFD_H

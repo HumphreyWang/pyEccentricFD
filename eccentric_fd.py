@@ -86,6 +86,26 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
                   np.array(list_of_h[j].contents.phase[:length])) for j in range(10))
 
 
+def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
+                         coa_phase=0., inclination=0., long_asc_nodes=0.,
+                         delta_f=None, f_lower=None, f_final=0., obs_time=0.):
+    h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
+    f = _rlib.SimInspiralEccentricFDAndPhase
+    # ***h_and_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
+    f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
+                  c_double, c_double, c_double, c_double, c_double,
+                  c_double, c_double, c_double, c_double, c_double, c_double]
+    _ = f(byref(h_and_phase), coa_phase, delta_f, mass1, mass2,
+          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
+    list_of_h = h_and_phase[:10]
+    length = list_of_h[0].contents.length
+    h_p = tuple(np.array(list_of_h[j].contents.amp_p[:length*2]) for j in range(10))
+    h_c = tuple(np.array(list_of_h[j].contents.amp_c[:length*2]) for j in range(10))
+    phase2 = np.array(list_of_h[1].contents.phase[:length])  # only need phase for j=2
+    return tuple((h_p[j].view(np.complex128),
+                  h_c[j].view(np.complex128)) for j in range(10)) + (phase2, )
+
+
 # In[3]:
 
 if __name__ == '__main__':
@@ -104,5 +124,6 @@ if __name__ == '__main__':
     start_time = time()
     print(strftime("%Y-%m-%d %H:%M:%S"))
     h_ap = gen_ecc_fd_amp_phase(**para)
+    h_ap_h = gen_ecc_fd_and_phase(**para)
     hp, hc = gen_ecc_fd_waveform(**para)
     print(strftime("%Y-%m-%d %H:%M:%S"), f'Finished in {time() - start_time: .5f}s', '\n')

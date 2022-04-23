@@ -21,8 +21,8 @@
 #define MSUN_SI 1.988546954961461467461011951140572744e30
 /* Geometrized solar mass, s */
 #define MTSUN_SI 4.925491025543575903411922162094833998e-6
-/* Geometrized solar mass, m */
-#define MRSUN_SI 1.476625061404649406193430731479084713e3
+/* Speed of light in vacuum, m s^-1 */
+#define C_SI 299792458e0
 /* Parsec, m */
 #define PC_SI 3.085677581491367278913937957796471611e16
 

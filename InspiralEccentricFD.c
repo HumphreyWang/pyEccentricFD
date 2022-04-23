@@ -468,7 +468,7 @@ int SimInspiralEccentricFD(
     data_c = htilde_->data_c;
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*MRSUN_SI/MTSUN_SI;
+    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
     shft = TWOPI * tC;
 
     jStart = (size_t) ceil(fStart / deltaF);
@@ -605,7 +605,7 @@ int SimInspiralEccentricFDAmpPhase(
     }
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*MRSUN_SI/MTSUN_SI;
+    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
     shft = TWOPI * tC;
 
     jStart = (size_t) ceil(fStart / deltaF);
@@ -731,7 +731,7 @@ int SimInspiralEccentricFDAndPhase(
     }
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*MRSUN_SI/MTSUN_SI;
+    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
     shft = TWOPI * tC;
 
     jStart = (size_t) ceil(fStart / deltaF);

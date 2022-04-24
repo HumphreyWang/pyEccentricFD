@@ -57,5 +57,10 @@ int main(int argc, const char * argv[]) {
     printf("%.15e + %.15ei\n", creal(x0_), cimag(x0_));
     printf("%.15e + %.15ei\n", creal(x1_), cimag(x1_));
 
+    DestroyComplex16FDWaveform(htilde);
+    for(int lm=0;lm<10;lm++) {
+        DestroyAmpPhaseFDWaveform(h_harm_series[lm]);
+        DestroyAmpPhaseFDWaveform(h_harm_series_h[lm]);
+    }
     return 0;
 }

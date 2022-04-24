@@ -51,6 +51,7 @@ def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
     # return (np.frombuffer(buffer_hp, dtype=np.complex128), np.frombuffer(buffer_hc, dtype=np.complex128))
     hp_, hc_ = (np.array(htilde.contents.data_p[:htilde.contents.length*2]),
                 np.array(htilde.contents.data_c[:htilde.contents.length*2]))
+    _rlib.DestroyComplex16FDWaveform(htilde)
     return hp_.view(np.complex128), hc_.view(np.complex128)
 
 
@@ -79,11 +80,11 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
     list_of_h = h_amp_phase[:10]
     length = list_of_h[0].contents.length
-    amp_p = tuple(np.array(list_of_h[j].contents.amp_p[:length*2]) for j in range(10))
-    amp_c = tuple(np.array(list_of_h[j].contents.amp_c[:length*2]) for j in range(10))
-    return tuple((amp_p[j].view(np.complex128),
-                  amp_c[j].view(np.complex128),
-                  np.array(list_of_h[j].contents.phase[:length])) for j in range(10))
+    amp_p_c_phase = tuple((np.array(list_of_h[j].contents.amp_p[:length*2]).view(np.complex128),
+                           np.array(list_of_h[j].contents.amp_c[:length*2]).view(np.complex128),
+                           np.array(list_of_h[j].contents.phase[:length])) for j in range(10))
+    [_rlib.DestroyAmpPhaseFDWaveform(h) for h in list_of_h]
+    return amp_p_c_phase
 
 
 def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
@@ -99,11 +100,11 @@ def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
     list_of_h = h_and_phase[:10]
     length = list_of_h[0].contents.length
-    h_p = tuple(np.array(list_of_h[j].contents.amp_p[:length*2]) for j in range(10))
-    h_c = tuple(np.array(list_of_h[j].contents.amp_c[:length*2]) for j in range(10))
+    h_p_c = tuple((np.array(list_of_h[j].contents.amp_p[:length*2]).view(np.complex128),
+                   np.array(list_of_h[j].contents.amp_c[:length*2]).view(np.complex128)) for j in range(10))
     phase2 = np.array(list_of_h[1].contents.phase[:length])  # only need phase for j=2
-    return tuple((h_p[j].view(np.complex128),
-                  h_c[j].view(np.complex128)) for j in range(10)) + (phase2, )
+    [_rlib.DestroyAmpPhaseFDWaveform(h) for h in list_of_h]
+    return h_p_c + (phase2, )
 
 
 # In[3]:

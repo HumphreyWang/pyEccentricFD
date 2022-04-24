@@ -10,7 +10,7 @@
 #endif
 
 
-Complex16FDWaveform *CreateComplex16FDWaveform(
+Complex16FDWaveform* CreateComplex16FDWaveform(
         double deltaF,
         size_t length
 ){
@@ -26,6 +26,13 @@ Complex16FDWaveform *CreateComplex16FDWaveform(
     memset(fs->data_p, 0, sizeof(double complex) * length);
     memset(fs->data_c, 0, sizeof(double complex) * length);
     return fs;
+}
+
+// https://stackoverflow.com/questions/1879550 Discussions about set pointers to `NULL` after freeing them
+void DestroyComplex16FDWaveform(Complex16FDWaveform* wf) {
+    free(wf->data_p);
+    free(wf->data_c);
+    free(wf);
 }
 
 AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
@@ -48,6 +55,13 @@ AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
     memset(wf->amp_c, 0, sizeof(double complex) * length);
     memset(wf->phase, 0, sizeof(double) * length);
     return wf;
+}
+
+void DestroyAmpPhaseFDWaveform(AmpPhaseFDWaveform* wf) {
+    free(wf->amp_p);
+    free(wf->amp_c);
+    free(wf->phase);
+    free(wf);
 }
 
 // Simplified code from lal/std/XLALError.c

@@ -35,10 +35,12 @@ typedef struct tagComplex16FDWaveform {
     size_t length;
 } Complex16FDWaveform;
 
-Complex16FDWaveform *CreateComplex16FDWaveform(
+Complex16FDWaveform* CreateComplex16FDWaveform(
         double deltaF,
         size_t length
 );
+
+void DestroyComplex16FDWaveform(Complex16FDWaveform* wf);
 
 typedef struct tagAmpPhaseFDWaveform {
     double complex * amp_p;
@@ -54,6 +56,8 @@ AmpPhaseFDWaveform* CreateAmpPhaseFDWaveform(
         size_t length,
         unsigned int harmonic
 );
+
+void DestroyAmpPhaseFDWaveform(AmpPhaseFDWaveform* wf);
 
 typedef enum {
     PD_SUCCESS = 0,      /**< PD_SUCCESS return value (not an error number) */

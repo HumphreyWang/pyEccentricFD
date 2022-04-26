@@ -3,8 +3,8 @@
 
 """connect to EccFD library"""
 import os
-import numpy as np
-from ctypes import cdll, Structure, POINTER, byref, c_double, c_size_t, c_uint
+from numpy import float64, complex128, frombuffer
+from ctypes import cdll, Structure, POINTER, byref, c_double, c_size_t, c_uint, cast
 
 _dirname = os.path.dirname(__file__)
 if _dirname == '':
@@ -31,10 +31,7 @@ class _EccFDWaveform(Structure):
 def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
                         coa_phase=0., inclination=0., long_asc_nodes=0.,
                         delta_f=None, f_lower=None, f_final=0., obs_time=0.):
-    """Note: Thanks to https://stackoverflow.com/questions/4355524,
-    although I haven't totally figured out the py_object part.
-    Additional Note: Thanks to https://stackoverflow.com/questions/5658047, that is SO BRILLIANT!"""
-
+    """Note: Thanks to https://stackoverflow.com/questions/5658047, that is SO BRILLIANT!"""
     f = _rlib.SimInspiralEccentricFD
     htilde = POINTER(_EccFDWaveform)()
     # **htilde, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
@@ -43,16 +40,11 @@ def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
                   c_double, c_double, c_double, c_double, c_double, c_double]
     _ = f(byref(htilde), coa_phase, delta_f, mass1, mass2,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
-    # from ctypes import pythonapi, py_object
-    # buffer_from_memory = pythonapi.PyMemoryView_FromMemory
-    # buffer_from_memory.restype = py_object
-    # buffer_hp = buffer_from_memory(htilde.contents.data_p, htilde.contents.length * 16)
-    # buffer_hc = buffer_from_memory(htilde.contents.data_c, htilde.contents.length * 16)
-    # return (np.frombuffer(buffer_hp, dtype=np.complex128), np.frombuffer(buffer_hc, dtype=np.complex128))
-    hp_, hc_ = (np.array(htilde.contents.data_p[:htilde.contents.length*2]),
-                np.array(htilde.contents.data_c[:htilde.contents.length*2]))
+    length = htilde.contents.length*2
+    hp_, hc_ = (_arr_from_buffer(htilde.contents.data_p, length),
+                _arr_from_buffer(htilde.contents.data_c, length))
     _rlib.DestroyComplex16FDWaveform(htilde)
-    return hp_.view(np.complex128), hc_.view(np.complex128)
+    return hp_.view(complex128), hc_.view(complex128)
 
 
 # In[2]:
@@ -70,8 +62,8 @@ class _EccFDAmpPhase(Structure):
 def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
                          coa_phase=0., inclination=0., long_asc_nodes=0.,
                          delta_f=None, f_lower=None, f_final=0., obs_time=0.):
-    h_amp_phase = POINTER(POINTER(_EccFDAmpPhase))()
     f = _rlib.SimInspiralEccentricFDAmpPhase
+    h_amp_phase = POINTER(POINTER(_EccFDAmpPhase))()
     # ***h_amp_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
                   c_double, c_double, c_double, c_double, c_double,
@@ -80,9 +72,9 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
     list_of_h = h_amp_phase[:10]
     length = list_of_h[0].contents.length
-    amp_p_c_phase = tuple((np.array(list_of_h[j].contents.amp_p[:length*2]).view(np.complex128),
-                           np.array(list_of_h[j].contents.amp_c[:length*2]).view(np.complex128),
-                           np.array(list_of_h[j].contents.phase[:length])) for j in range(10))
+    amp_p_c_phase = tuple((_arr_from_buffer(list_of_h[j].contents.amp_p, length*2).view(complex128),
+                           _arr_from_buffer(list_of_h[j].contents.amp_c, length*2).view(complex128),
+                           _arr_from_buffer(list_of_h[j].contents.phase, length)) for j in range(10))
     [_rlib.DestroyAmpPhaseFDWaveform(h) for h in list_of_h]
     return amp_p_c_phase
 
@@ -98,13 +90,22 @@ def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
                   c_double, c_double, c_double, c_double, c_double, c_double]
     _ = f(byref(h_and_phase), coa_phase, delta_f, mass1, mass2,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, obs_time)
-    list_of_h = h_and_phase[:10]
-    length = list_of_h[0].contents.length
-    h_p_c = tuple((np.array(list_of_h[j].contents.amp_p[:length*2]).view(np.complex128),
-                   np.array(list_of_h[j].contents.amp_c[:length*2]).view(np.complex128)) for j in range(10))
-    phase2 = np.array(list_of_h[1].contents.phase[:length])  # only need phase for j=2
-    [_rlib.DestroyAmpPhaseFDWaveform(h) for h in list_of_h]
+    list_h = h_and_phase[:10]
+    length = list_h[0].contents.length
+    h_p_c = tuple((_arr_from_buffer(list_h[j].contents.amp_p, length*2).view(complex128),
+                   _arr_from_buffer(list_h[j].contents.amp_c, length*2).view(complex128)) for j in range(10))
+    phase2 = _arr_from_buffer(list_h[1].contents.phase, length)  # only need phase for j=2
+    [_rlib.DestroyAmpPhaseFDWaveform(h) for h in list_h]
     return h_p_c + (phase2, )
+
+
+def _arr_from_buffer(p, length):
+    """https://stackoverflow.com/questions/7543675
+      frombuffer is faster than fromiter because it create array without copying
+     https://stackoverflow.com/questions/4355524
+      The copy() is used for the np.ndarray to acquire ownership,
+      then you can safely free pointers to avoid memory leaks."""
+    return frombuffer(cast(p, POINTER(c_double*length)).contents, float64).copy()
 
 
 # In[3]:

@@ -407,7 +407,7 @@ int SimInspiralEccentricFD(
         const double fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
-        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
+        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
         const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
         const double space_obs_T                /**< Observation time (Only required for space detector) (s) */
 )
@@ -468,7 +468,7 @@ int SimInspiralEccentricFD(
     data_c = htilde_->data_c;
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
+    Amplitude = -sqrt(5./384.)*pow(PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
     shft = TWOPI * tC;
 
     jStart = (size_t) ceil(fStart / deltaF);
@@ -493,7 +493,7 @@ int SimInspiralEccentricFD(
 
         for(int lm=1;lm<11;lm++){
 
-            zim=M_PI/4. + pow(((double)lm)/2.,8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
+            zim=PI/4. + pow(((double)lm)/2.,8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
 
             cphase = gsl_complex_rect (zr,zim);
 
@@ -539,7 +539,7 @@ int SimInspiralEccentricFDAmpPhase(
         const double fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
-        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
+        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
         const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
         const double space_obs_T                /**< Observation time (Only required for space detector) (s) */
 )
@@ -605,7 +605,7 @@ int SimInspiralEccentricFDAmpPhase(
     }
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
+    Amplitude = -sqrt(5./384.)*pow(PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
     shft = TWOPI * tC;
 
     jStart = (size_t) ceil(fStart / deltaF);
@@ -623,7 +623,7 @@ int SimInspiralEccentricFDAmpPhase(
 
         for(int lm=1;lm<11;lm++){
             // Eq.(4.28)
-            phase_tay = M_PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
+            phase_tay = PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
             // Eq.(4.20)
             czeta_FPlus = zeta_generic_re_plus(lm, f, &ak) + 1.j * zeta_generic_im_plus(lm, f, &ak);
             czeta_FCross= zeta_generic_re_cross(lm, f, &ak)+ 1.j * zeta_generic_im_cross(lm, f, &ak);
@@ -665,7 +665,7 @@ int SimInspiralEccentricFDAndPhase(
         const double fEnd,                      /**< Highest GW frequency (Hz): end at Schwarzschild ISCO */
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
-        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 M_PI]*/
+        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
         const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
         const double space_obs_T                /**< Observation time (Only required for space detector) (s) */
 )
@@ -731,7 +731,7 @@ int SimInspiralEccentricFDAndPhase(
     }
 
     /* extrinsic parameters*/
-    Amplitude = -sqrt(5./384.)*pow(M_PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
+    Amplitude = -sqrt(5./384.)*pow(PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
     shft = TWOPI * tC;
 
     jStart = (size_t) ceil(fStart / deltaF);
@@ -749,7 +749,7 @@ int SimInspiralEccentricFDAndPhase(
 
         for(int lm=1;lm<11;lm++){
             // Eq.(4.28)
-            phase_tay = M_PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
+            phase_tay = PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
             exp_phase = cexp(1.j * phase_tay);
             // Eq.(4.20)
             czeta_FPlus = zeta_generic_re_plus(lm, f, &ak) + 1.j * zeta_generic_im_plus(lm, f, &ak);

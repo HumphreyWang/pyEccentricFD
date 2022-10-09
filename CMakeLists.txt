@@ -1,15 +1,15 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 2.8)
 
 project(EccentricFD C)
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99")
 
-add_executable(EccentricFD main.c InspiralEccentricFD.c InspiralOptimizedCoefficientsEccentricityFD.c InspiralEccentricFDBasic.c)
+add_executable(EccentricFD_main main.c InspiralEccentricFD.c InspiralOptimizedCoefficientsEccentricityFD.c InspiralEccentricFDBasic.c)
 
-target_link_libraries(EccentricFD m gsl gslcblas)
+target_link_libraries(EccentricFD_main m gsl gslcblas)
 
-set_target_properties(EccentricFD PROPERTIES LINK_FLAGS "-Wl,-rpath,/home/dice/anaconda3/lib")
+set_target_properties(EccentricFD_main PROPERTIES LINK_FLAGS "-Wl,-rpath,/home/dice/anaconda3/lib")
 
 add_library(EccFD SHARED InspiralEccentricFD.c InspiralOptimizedCoefficientsEccentricityFD.c InspiralEccentricFDBasic.c)
 

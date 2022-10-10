@@ -7,6 +7,8 @@ This is a modified `EccentricFD` waveform, which is specially for space-detector
 
 - We do not need to install `LAL` since I have rewritten those part, we only need a C environment and `gsl` package.
 
+  - **Note:** If cmake cannot find `gsl` automatically, you have to specify the directories in CMakeLists.txt.
+
 - We can compile them easily by cmake:
 
 ```shell

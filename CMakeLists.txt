@@ -9,7 +9,10 @@ add_executable(EccentricFD_main main.c InspiralEccentricFD.c InspiralOptimizedCo
 
 target_link_libraries(EccentricFD_main m gsl gslcblas)
 
-set_target_properties(EccentricFD_main PROPERTIES LINK_FLAGS "-Wl,-rpath,/home/dice/anaconda3/lib")
+set_target_properties(EccentricFD_main PROPERTIES LINK_FLAGS "-Wl,-rpath,/public/software/gsl-2.7.1/lib")
+
+include_directories("/public/software/gsl-2.7.1/include")
+link_directories("/public/software/gsl-2.7.1/lib")
 
 add_library(EccFD SHARED InspiralEccentricFD.c InspiralOptimizedCoefficientsEccentricityFD.c InspiralEccentricFDBasic.c)
 

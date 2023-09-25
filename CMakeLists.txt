@@ -1,19 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(EccentricFD C)
+project(pyEccentricFD C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99")
 
-add_executable(EccentricFD_main main.c InspiralEccentricFD.c InspiralOptimizedCoefficientsEccentricityFD.c InspiralEccentricFDBasic.c)
+aux_source_directory(src sources)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(EccentricFD_main m gsl gslcblas)
+## Note: uncomment this to see the test
+#add_executable(EccentricFD_test test.c)
+#target_sources(EccentricFD_test PUBLIC ${sources})
+#target_link_libraries(EccentricFD_test m gsl gslcblas)
+#target_link_options(EccentricFD_test PRIVATE "-Wl,-rpath,/public/software/gsl-2.7.1/lib")
 
-set_target_properties(EccentricFD_main PROPERTIES LINK_FLAGS "-Wl,-rpath,/public/software/gsl-2.7.1/lib")
+## Note: uncomment this to specify gsl directories
+#include_directories("/public/software/gsl-2.7.1/include")
+#link_directories("/public/software/gsl-2.7.1/lib")
 
-include_directories("/public/software/gsl-2.7.1/include")
-link_directories("/public/software/gsl-2.7.1/lib")
-
-add_library(EccFD SHARED InspiralEccentricFD.c InspiralOptimizedCoefficientsEccentricityFD.c InspiralEccentricFDBasic.c)
-
+add_library(EccFD SHARED)
+target_sources(EccFD PUBLIC ${sources})
 target_link_libraries(EccFD m gsl gslcblas)

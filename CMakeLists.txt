@@ -9,7 +9,7 @@ aux_source_directory(src sources)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 ## Note: uncomment this to see the test
-#add_executable(EccentricFD_test test.c)
+#add_executable(EccentricFD_test ./tests/test.c)
 #target_sources(EccentricFD_test PUBLIC ${sources})
 #target_link_libraries(EccentricFD_test m gsl gslcblas)
 #target_link_options(EccentricFD_test PRIVATE "-Wl,-rpath,/public/software/gsl-2.7.1/lib")

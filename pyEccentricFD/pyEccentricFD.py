@@ -36,7 +36,7 @@ def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
     """Note: Thanks to https://stackoverflow.com/questions/5658047"""
     f = _rlib.SimInspiralEccentricFD
     htilde = POINTER(_EccFDWaveform)()
-    # **htilde, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
+    # **htilde, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
     f.argtypes = [POINTER(POINTER(_EccFDWaveform)),
                   c_double, c_double, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]
@@ -64,7 +64,7 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
                          delta_f=None, f_lower=None, f_final=0., space_cutoff=False):
     f = _rlib.SimInspiralEccentricFDAmpPhase
     h_amp_phase = POINTER(POINTER(_EccFDAmpPhase))()
-    # ***h_amp_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
+    # ***h_amp_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
                   c_double, c_double, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]
@@ -84,7 +84,7 @@ def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
                          delta_f=None, f_lower=None, f_final=0., space_cutoff=False):
     h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
     f = _rlib.SimInspiralEccentricFDAndPhase
-    # ***h_and_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min
+    # ***h_and_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
                   c_double, c_double, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]

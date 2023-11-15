@@ -410,7 +410,7 @@ int SimInspiralEccentricFD(
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
         const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
-        const bool space_cutoff                 /**< Observation time (Only required for space detector) (s) */
+        const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
     const double m1 = m1_SI / MSUN_SI;
@@ -542,7 +542,7 @@ int SimInspiralEccentricFDAmpPhase(
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
         const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
-        const bool space_cutoff                 /**< Observation time (Only required for space detector) (s) */
+        const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
     const double m1 = m1_SI / MSUN_SI;
@@ -667,7 +667,7 @@ int SimInspiralEccentricFDAndPhase(
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
         const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
-        const bool space_cutoff                 /**< Observation time (Only required for space detector) (s) */
+        const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
     const double m1 = m1_SI / MSUN_SI;

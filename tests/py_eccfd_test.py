@@ -18,7 +18,7 @@ para = {'delta_f': 0.0001,
         'long_asc_nodes': 0.23,
         'coa_phase': 0,
         'distance': 100 * MPC_SI,
-        'obs_time': 365*24*3600}
+        'space_cutoff': True}
 start_time = time()
 print(strftime("%Y-%m-%d %H:%M:%S"))
 h_ap = gen_ecc_fd_amp_phase(**para)

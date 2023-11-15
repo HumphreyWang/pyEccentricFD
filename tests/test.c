@@ -27,6 +27,12 @@ int main(int argc, const char * argv[]) {
     SimInspiralEccentricFDAndPhase(&h_harm_series_h, phiRef, deltaF, m1 * MSUN_SI, m2 * MSUN_SI,
                                    fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
 
+    double Mtotal = (m1+m2) * MTSUN_SI;  /* total mass in seconds */
+    double eta = m1 * m2 / ((m1+m2) * (m1+m2));
+    double mchirp= pow(eta, 3./5.)*Mtotal;
+    double f_yr = pow(5., 3./8.)/(8*PI) * pow(mchirp, -5./8.) * pow(space_obs_T, -3./8.);
+    printf("f_yr: %.15f\n\n", f_yr);
+
     complex double x0 = (htilde->data_p[j]);
     complex double x1 = (htilde->data_c[j]);
     printf("%.15e + %.15ei\n", creal(x0), cimag(x0));

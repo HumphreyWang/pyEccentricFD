@@ -17,8 +17,9 @@ int main(int argc, const char * argv[]) {
     double space_obs_T = strtod(argv[11], NULL);
 
     Complex16FDWaveform *htilde=NULL;
-    AmpPhaseFDWaveform **h_harm_series=NULL, **h_harm_series_h=NULL;
+    AmpPhaseFDWaveform **h_harm_series=NULL, **h_harm_series_h=NULL, **h_harm_sequence=NULL;
     int j=1000;
+    double freqs[] = {100*deltaF, j*deltaF, 2*j*deltaF, 3*j*deltaF};
 
     SimInspiralEccentricFD(&htilde, phiRef, deltaF, m1 * MSUN_SI, m2 * MSUN_SI,
                            fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
@@ -26,6 +27,8 @@ int main(int argc, const char * argv[]) {
                                    fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
     SimInspiralEccentricFDAndPhase(&h_harm_series_h, phiRef, deltaF, m1 * MSUN_SI, m2 * MSUN_SI,
                                    fStart, fEnd, i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
+    SimInspiralEccentricFDAndPhaseSequence(&h_harm_sequence, (const double *) &freqs, 4, phiRef, m1 * MSUN_SI, m2 * MSUN_SI,
+                                           i, Dl * 1e6 * PC_SI, inclination_azimuth, e_min, space_obs_T);
 
     double Mtotal = (m1+m2) * MTSUN_SI;  /* total mass in seconds */
     double eta = m1 * m2 / ((m1+m2) * (m1+m2));
@@ -61,12 +64,25 @@ int main(int argc, const char * argv[]) {
         printf("(%.15e, %.15e)\n", cabs(a0), p0);
     }
     printf("%.15e + %.15ei\n", creal(x0_), cimag(x0_));
+    printf("%.15e + %.15ei\n\n", creal(x1_), cimag(x1_));
+
+    x0_=0.j, x1_=0.j;
+    for(int lm=0;lm<10;lm++) {
+        a0 = (h_harm_sequence[lm]->amp_p[1]);
+        a1 = (h_harm_sequence[lm]->amp_c[1]);
+        p0 = (h_harm_sequence[lm]->phase[1]);
+        x0_ += a0;
+        x1_ += a1;
+        printf("(%.15e, %.15e)\n", cabs(a0), p0);
+    }
+    printf("%.15e + %.15ei\n", creal(x0_), cimag(x0_));
     printf("%.15e + %.15ei\n", creal(x1_), cimag(x1_));
 
     DestroyComplex16FDWaveform(htilde);
     for(int lm=0;lm<10;lm++) {
         DestroyAmpPhaseFDWaveform(h_harm_series[lm]);
         DestroyAmpPhaseFDWaveform(h_harm_series_h[lm]);
+        DestroyAmpPhaseFDWaveform(h_harm_sequence[lm]);
     }
     return 0;
 }

@@ -413,6 +413,15 @@ int SimInspiralEccentricFD(
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
+    /* Perform some initial checks */
+    if (!htilde) ERROR(PD_EFAULT, NULL);
+    if (*htilde) ERROR(PD_EFAULT, NULL);
+    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (fStart <= 0) ERROR(PD_EDOM, NULL);
+    if (r <= 0) ERROR(PD_EDOM, NULL);
+    if (fEnd < 0) ERROR(PD_EDOM, NULL);
+
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
     const double m = m1 + m2;
@@ -439,16 +448,6 @@ int SimInspiralEccentricFD(
     double tC = 0.;  // coalesce at t=0, FIXME: Why `lal` use -1. / deltaF ?
 
     Complex16FDWaveform *htilde_;
-
-    /* Perform some initial checks */
-    if (!htilde) ERROR(PD_EFAULT, NULL);
-    if (*htilde) ERROR(PD_EFAULT, NULL);
-    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
-    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
-    if (fStart <= 0) ERROR(PD_EDOM, NULL);
-    if (r <= 0) ERROR(PD_EDOM, NULL);
-    if (fEnd < 0) ERROR(PD_EDOM, NULL);
-
 
     /* allocate htilde_p and htilde_c*/
     if ( fEnd == 0. ) // End at ISCO
@@ -545,6 +544,15 @@ int SimInspiralEccentricFDAmpPhase(
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
+    /* Perform some initial checks */
+    if (!h_amp_phase) ERROR(PD_EFAULT, NULL);
+    if (*h_amp_phase) ERROR(PD_EFAULT, NULL);
+    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (fStart <= 0) ERROR(PD_EDOM, NULL);
+    if (r <= 0) ERROR(PD_EDOM, NULL);
+    if (fEnd < 0) ERROR(PD_EDOM, NULL);
+
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
     const double m = m1 + m2;
@@ -570,16 +578,6 @@ int SimInspiralEccentricFDAmpPhase(
     double tC = 0.;  // coalesce at t=0, why `lal` use -1. / deltaF ?
 
     AmpPhaseFDWaveform *htilde_ap;
-
-    /* Perform some initial checks */
-    if (!h_amp_phase) ERROR(PD_EFAULT, NULL);
-    if (*h_amp_phase) ERROR(PD_EFAULT, NULL);
-    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
-    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
-    if (fStart <= 0) ERROR(PD_EDOM, NULL);
-    if (r <= 0) ERROR(PD_EDOM, NULL);
-    if (fEnd < 0) ERROR(PD_EDOM, NULL);
-
 
     /* allocate htilde_p and htilde_c*/
     if ( fEnd == 0. ) // End at ISCO
@@ -670,6 +668,15 @@ int SimInspiralEccentricFDAndPhase(
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
+    /* Perform some initial checks */
+    if (!h_and_phase) ERROR(PD_EFAULT, NULL);
+    if (*h_and_phase) ERROR(PD_EFAULT, NULL);
+    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (fStart <= 0) ERROR(PD_EDOM, NULL);
+    if (r <= 0) ERROR(PD_EDOM, NULL);
+    if (fEnd < 0) ERROR(PD_EDOM, NULL);
+
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
     const double m = m1 + m2;
@@ -695,16 +702,6 @@ int SimInspiralEccentricFDAndPhase(
     double tC = 0.;  // coalesce at t=0, why `lal` use -1. / deltaF ?
 
     AmpPhaseFDWaveform *htilde_ap;
-
-    /* Perform some initial checks */
-    if (!h_and_phase) ERROR(PD_EFAULT, NULL);
-    if (*h_and_phase) ERROR(PD_EFAULT, NULL);
-    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
-    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
-    if (fStart <= 0) ERROR(PD_EDOM, NULL);
-    if (r <= 0) ERROR(PD_EDOM, NULL);
-    if (fEnd < 0) ERROR(PD_EDOM, NULL);
-
 
     /* allocate htilde_p and htilde_c*/
     if ( fEnd == 0. ) // End at ISCO
@@ -766,6 +763,115 @@ int SimInspiralEccentricFDAndPhase(
         }
 
         f+=deltaF;
+    }
+
+    return PD_SUCCESS;
+
+}
+
+
+int SimInspiralEccentricFDAndPhaseSequence(
+        AmpPhaseFDWaveform ***h_and_phase,
+        const double *freqs,                    /**< Frequency points at which to evaluate the waveform (Hz) */
+        size_t length,
+        const double phiRef,                    /**< Orbital coalescence phase (rad) */
+        const double m1_SI,                     /**< Mass of companion 1 (kg) */
+        const double m2_SI,                     /**< Mass of companion 2 (kg) */
+        const double i,                         /**< Polar inclination of source (rad) */
+        const double r,                         /**< Distance of source (m) */
+        const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
+        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
+)
+{
+    /* Perform some initial checks */
+    if (!freqs) ERROR(PD_EFAULT, NULL);
+    if (!h_and_phase) ERROR(PD_EFAULT, NULL);
+    if (*h_and_phase) ERROR(PD_EFAULT, NULL);
+    if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
+    if (r <= 0) ERROR(PD_EDOM, NULL);
+
+    const double m1 = m1_SI / MSUN_SI;
+    const double m2 = m2_SI / MSUN_SI;
+    const double m = m1 + m2;
+    const double Mtotal = m * MTSUN_SI;  /* total mass in seconds */
+    const double eta = m1 * m2 / (m * m);
+    const double piM = PI * Mtotal;
+    const double vISCO = 1. / sqrt(6.);
+    const double fISCO = vISCO * vISCO * vISCO / piM;
+    const double mchirp= pow(eta, 3./5.)*Mtotal;
+    double shft, fupper = 2.*fISCO, f_yr=0., heavy;
+    double f;
+
+    complex double czeta_FPlus, czeta_FCross, hplus_a, hcross_a, exp_phase;
+    double Amplitude, phase_tay, Phaseorder, h_phase;
+    size_t j;
+    double fStart = freqs[0], fEnd = freqs[length - 1];
+    if (fStart <= 0) ERROR(PD_EDOM, NULL);
+    if (fEnd <= 0) ERROR(PD_EDOM, NULL);
+
+    expnCoeffsEPC ak;
+    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
+
+
+    complex double *data_p_a[10] = {}, *data_c_a[10] = {};
+    double *data_pha[10] = {};
+    double tC = 0.;  // coalesce at t=0, why `lal` use -1. / deltaF ?
+
+    AmpPhaseFDWaveform *htilde_ap;
+
+    /* allocate htilde_p and htilde_c*/
+    if (space_cutoff){
+        fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
+        f_yr = fStart;
+    }
+
+    *h_and_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);
+    for(int lm=0;lm<10;lm++){
+
+        htilde_ap = CreateAmpPhaseFDWaveform(-1, length, lm+1);
+        if (!htilde_ap) ERROR(PD_EFUNC, NULL);
+
+        (*h_and_phase)[lm] = htilde_ap;
+        data_p_a[lm] = ((*h_and_phase)[lm])->amp_p;
+        data_c_a[lm] = ((*h_and_phase)[lm])->amp_c;
+        data_pha[lm] = ((*h_and_phase)[lm])->phase;
+    }
+
+    /* extrinsic parameters*/
+    Amplitude = -sqrt(5./384.)*pow(PI, -2./3.)*(pow(mchirp,5./6.)/r)*C_SI;
+    shft = TWOPI * tC;
+
+    /* In order to calculate the space antenna pattern, we need to decompose waveform into
+     * different eccentric harmonics, for here, we directly output h instead of amplitude, and also the phase.*/
+
+    for(j=0;j<length;j++){
+        f = freqs[j];
+        Phaseorder=0.;
+        for(int k=1; k<8; k++){
+            Phaseorder+=-PhaseAccTaylorF2(k, f, &ak);
+        }
+
+        for(int lm=1;lm<11;lm++){
+            // Eq.(4.28)
+            phase_tay = PI/4. + pow(((double)lm)/2., 8./3.)*Phaseorder - shft*f + ((double)lm)*phiRef;
+            exp_phase = cexp(1.j * phase_tay);
+            // Eq.(4.20)
+            czeta_FPlus = zeta_generic_re_plus(lm, f, &ak) + 1.j * zeta_generic_im_plus(lm, f, &ak);
+            czeta_FCross= zeta_generic_re_cross(lm, f, &ak)+ 1.j * zeta_generic_im_cross(lm, f, &ak);
+
+            // Set Heaviside funcs like Eq.(5.5) & Eq.(5.6)
+            heavy = Heaviside(((double)lm)*fupper-2.*f) * Heaviside(2.*f-((double)lm)*f_yr);
+            hplus_a = heavy * pow(((double)lm)/2., 2./3.) * czeta_FPlus  * exp_phase;
+            hcross_a= heavy * pow(((double)lm)/2., 2./3.) * czeta_FCross * exp_phase;
+            h_phase = phase_tay;  // may do not need to multiply `heavy` for phase?
+
+            data_p_a[lm-1][j] = Amplitude*pow(f, -7./6.)*hplus_a;
+            data_c_a[lm-1][j] = Amplitude*pow(f, -7./6.)*hcross_a;
+            data_pha[lm-1][j] = h_phase;
+        }
+
     }
 
     return PD_SUCCESS;

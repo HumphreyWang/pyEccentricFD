@@ -4,6 +4,7 @@ project(pyEccentricFD C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99")
+#set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -std=c99")
 
 aux_source_directory(src sources)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)

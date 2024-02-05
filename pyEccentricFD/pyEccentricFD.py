@@ -8,6 +8,8 @@ from numpy import float64, complex128, frombuffer
 from ctypes import cdll, Structure, POINTER, byref, c_double, c_size_t, c_uint, c_bool, cast
 import glob
 
+c_double_p = POINTER(c_double)
+
 _dirname = os.path.dirname(__file__)
 if _dirname == '':
     _dirname = '.'
@@ -22,9 +24,9 @@ except OSError:
 class _EccFDWaveform(Structure):
     """Note: The 'data' actually should be POINTER(c_complex), but ctypes do not have that,
     so we finally use buffer to restore the data, then any types of number in POINTER() is OK.
-    Additional Note: Now we are using numpy `ndarray.view` here, so POINTER(c_double) is required."""
-    _fields_ = [("data_p", POINTER(c_double)),  # complex double
-                ("data_c", POINTER(c_double)),  # complex double
+    Additional Note: Now we are using numpy `ndarray.view` here, so c_double_p is required."""
+    _fields_ = [("data_p", c_double_p),  # complex double
+                ("data_c", c_double_p),  # complex double
                 ("deltaF", c_double),
                 ("length", c_size_t),
                 ]
@@ -50,9 +52,9 @@ def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
 
 
 class _EccFDAmpPhase(Structure):
-    _fields_ = [("amp_p", POINTER(c_double)),  # complex double
-                ("amp_c", POINTER(c_double)),  # complex double
-                ("phase", POINTER(c_double)),
+    _fields_ = [("amp_p", c_double_p),  # complex double
+                ("amp_c", c_double_p),  # complex double
+                ("phase", c_double_p),
                 ("deltaF", c_double),
                 ("length", c_size_t),
                 ("harmonic", c_uint),
@@ -82,8 +84,8 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
 def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
                          coa_phase=0., inclination=0., long_asc_nodes=0.,
                          delta_f=None, f_lower=None, f_final=0., space_cutoff=False):
-    h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
     f = _rlib.SimInspiralEccentricFDAndPhase
+    h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
     # ***h_and_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
                   c_double, c_double, c_double, c_double, c_double,
@@ -92,6 +94,25 @@ def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
           f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, space_cutoff)
     list_h = h_and_phase[:10]
     length = list_h[0].contents.length
+    h_p_c = tuple((_arr_from_buffer(list_h[j].contents.amp_p, length*2).view(complex128),
+                   _arr_from_buffer(list_h[j].contents.amp_c, length*2).view(complex128)) for j in range(10))
+    phase2 = _arr_from_buffer(list_h[1].contents.phase, length)  # only need phase for j=2
+    [_rlib.DestroyAmpPhaseFDWaveform(h) for h in list_h]
+    return h_p_c + (phase2, )
+
+
+def gen_ecc_fd_and_phase_sequence(freqs, mass1, mass2, eccentricity, distance,
+                                  coa_phase=0., inclination=0., long_asc_nodes=0., space_cutoff=False):
+    length = len(freqs)
+    f = _rlib.SimInspiralEccentricFDAndPhaseSequence
+    h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
+    # ***h_and_phase, freqs, length, phiRef, m1_SI, m2_SI, i, r, inclination_azimuth, e_min, space_cutoff
+    f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
+                  c_double_p, c_size_t, c_double, c_double,
+                  c_double, c_double, c_double, c_double, c_double, c_bool]
+    _ = f(byref(h_and_phase), freqs.ctypes.data_as(c_double_p), length, coa_phase, mass1, mass2,
+          inclination, distance, long_asc_nodes, eccentricity, space_cutoff)
+    list_h = h_and_phase[:10]
     h_p_c = tuple((_arr_from_buffer(list_h[j].contents.amp_p, length*2).view(complex128),
                    _arr_from_buffer(list_h[j].contents.amp_c, length*2).view(complex128)) for j in range(10))
     phase2 = _arr_from_buffer(list_h[1].contents.phase, length)  # only need phase for j=2
@@ -108,4 +129,4 @@ def _arr_from_buffer(p, length):
     return frombuffer(cast(p, POINTER(c_double*length)).contents, float64).copy()
 
 
-__all__ = ['gen_ecc_fd_waveform', 'gen_ecc_fd_amp_phase', 'gen_ecc_fd_and_phase']
+__all__ = ['gen_ecc_fd_waveform', 'gen_ecc_fd_amp_phase', 'gen_ecc_fd_and_phase', 'gen_ecc_fd_and_phase_sequence']

@@ -28,6 +28,7 @@ extension_module = Extension(
         include_dirs=['include', include_gsl_dir, np.get_include()],  # Add any necessary include directories
         libraries=['gsl', 'gslcblas', 'm'],  # Add any necessary libraries
         library_dirs=['lib', lib_gsl_dir],  # Add any necessary library directories
+        extra_compile_args=["-std=c99"],
         )
 
 setup(

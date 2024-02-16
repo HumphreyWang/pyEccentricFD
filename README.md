@@ -37,7 +37,7 @@ make
 You can also see settings in CMakeLists.txt for an executable `EccentricFD_test`, this is just for testing, like:
 
 ```shell
-cmake-build/EccentricFD_test 10 10 0.4 0.23 0.23 0 100 0.01 1 0.0001 0
+cmake-build/EccentricFD_test 10 10 0.4 0.23 0.23 0 100 0.01 1 0.0001 0 0
 ```
 
 # Learn more

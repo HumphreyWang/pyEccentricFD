@@ -409,7 +409,8 @@ int SimInspiralEccentricFD(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
-        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double e_min,                     /**< Initial eccentricity at frequency *f_ref*: range [0, 0.4] */
+        const double fRef,                      /**< Reference GW frequency (Hz) for initial eccentricity and space_cutoff */
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
@@ -421,6 +422,8 @@ int SimInspiralEccentricFD(
     if (fStart <= 0) ERROR(PD_EDOM, NULL);
     if (r <= 0) ERROR(PD_EDOM, NULL);
     if (fEnd < 0) ERROR(PD_EDOM, NULL);
+    if (fRef < 0) ERROR(PD_EDOM, NULL);
+    if (fRef > fStart) ERROR(PD_EDOM, "fRef should NOT be larger than fStart!");
 
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
@@ -432,6 +435,7 @@ int SimInspiralEccentricFD(
     const double fISCO = vISCO * vISCO * vISCO / piM;
     const double mchirp= pow(eta, 3./5.)*Mtotal;
     double shft, f_max, fupper = 2.*fISCO, f_yr=0., heavy;
+    double f_ref = (fRef == 0.) ? fStart : fRef;
     double f;
 
     gsl_complex cphase, exphase, czeta_FPlus,czeta_FCross, czeta_FPlus_times_exphase,czeta_FCross_times_exphase;
@@ -440,7 +444,7 @@ int SimInspiralEccentricFD(
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
-    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
+    EPCSetup( &ak, m1, m2, f_ref, i, inclination_azimuth, e_min);
 
 
     complex double *data_p = NULL;
@@ -457,7 +461,7 @@ int SimInspiralEccentricFD(
     n = (size_t) (f_max / deltaF + 1);
     if (space_cutoff){
         fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
-        f_yr = fStart;
+        f_yr = f_ref;
     }
 
     htilde_ = CreateComplex16FDWaveform(deltaF, n);
@@ -540,7 +544,8 @@ int SimInspiralEccentricFDAmpPhase(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
-        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double e_min,                     /**< Initial eccentricity at frequency *f_ref*: range [0, 0.4] */
+        const double fRef,                      /**< Reference GW frequency (Hz) for initial eccentricity and space_cutoff */
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
@@ -552,6 +557,8 @@ int SimInspiralEccentricFDAmpPhase(
     if (fStart <= 0) ERROR(PD_EDOM, NULL);
     if (r <= 0) ERROR(PD_EDOM, NULL);
     if (fEnd < 0) ERROR(PD_EDOM, NULL);
+    if (fRef < 0) ERROR(PD_EDOM, NULL);
+    if (fRef > fStart) ERROR(PD_EDOM, "fRef should NOT be larger than fStart!");
 
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
@@ -563,6 +570,7 @@ int SimInspiralEccentricFDAmpPhase(
     const double fISCO = vISCO * vISCO * vISCO / piM;
     const double mchirp= pow(eta, 3./5.)*Mtotal;
     double shft, f_max, fupper = 2.*fISCO, f_yr=0., heavy;
+    double f_ref = (fRef == 0.) ? fStart : fRef;
     double f;
 
     complex double czeta_FPlus, czeta_FCross, hplus_a, hcross_a;
@@ -570,7 +578,7 @@ int SimInspiralEccentricFDAmpPhase(
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
-    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
+    EPCSetup( &ak, m1, m2, f_ref, i, inclination_azimuth, e_min);
 
 
     complex double *data_p_a[10] = {}, *data_c_a[10] = {};
@@ -587,7 +595,7 @@ int SimInspiralEccentricFDAmpPhase(
     n = (size_t) (f_max / deltaF + 1);
     if (space_cutoff){
         fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
-        f_yr = fStart;
+        f_yr = f_ref;
     }
 
     *h_amp_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);
@@ -664,7 +672,8 @@ int SimInspiralEccentricFDAndPhase(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
-        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double e_min,                     /**< Initial eccentricity at frequency *f_ref*: range [0, 0.4] */
+        const double fRef,                      /**< Reference GW frequency (Hz) for initial eccentricity and space_cutoff */
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
@@ -676,6 +685,8 @@ int SimInspiralEccentricFDAndPhase(
     if (fStart <= 0) ERROR(PD_EDOM, NULL);
     if (r <= 0) ERROR(PD_EDOM, NULL);
     if (fEnd < 0) ERROR(PD_EDOM, NULL);
+    if (fRef < 0) ERROR(PD_EDOM, NULL);
+    if (fRef > fStart) ERROR(PD_EDOM, "fRef should NOT be larger than fStart!");
 
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
@@ -687,6 +698,7 @@ int SimInspiralEccentricFDAndPhase(
     const double fISCO = vISCO * vISCO * vISCO / piM;
     const double mchirp= pow(eta, 3./5.)*Mtotal;
     double shft, f_max, fupper = 2.*fISCO, f_yr=0., heavy;
+    double f_ref = (fRef == 0.) ? fStart : fRef;
     double f;
 
     complex double czeta_FPlus, czeta_FCross, hplus_a, hcross_a, exp_phase;
@@ -694,7 +706,7 @@ int SimInspiralEccentricFDAndPhase(
     size_t j, n, jStart;
 
     expnCoeffsEPC ak;
-    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
+    EPCSetup( &ak, m1, m2, f_ref, i, inclination_azimuth, e_min);
 
 
     complex double *data_p_a[10] = {}, *data_c_a[10] = {};
@@ -711,7 +723,7 @@ int SimInspiralEccentricFDAndPhase(
     n = (size_t) (f_max / deltaF + 1);
     if (space_cutoff){
         fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
-        f_yr = fStart;
+        f_yr = f_ref;
     }
 
     *h_and_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);
@@ -780,7 +792,8 @@ int SimInspiralEccentricFDAndPhaseSequence(
         const double i,                         /**< Polar inclination of source (rad) */
         const double r,                         /**< Distance of source (m) */
         const double inclination_azimuth,       /**< Azimuthal component of inclination angles [0, 2 PI]*/
-        const double e_min,                     /**< Initial eccentricity at frequency f_min: range [0, 0.4] */
+        const double e_min,                     /**< Initial eccentricity at frequency *f_ref*: range [0, 0.4] */
+        const double fRef,                      /**< Reference GW frequency (Hz) for initial eccentricity and space_cutoff */
         const bool space_cutoff                 /**< BOOL: if further cutoff the frequency (ONLY for space detector) */
 )
 {
@@ -791,6 +804,7 @@ int SimInspiralEccentricFDAndPhaseSequence(
     if (m1_SI <= 0) ERROR(PD_EDOM, NULL);
     if (m2_SI <= 0) ERROR(PD_EDOM, NULL);
     if (r <= 0) ERROR(PD_EDOM, NULL);
+    if (fRef < 0) ERROR(PD_EDOM, NULL);
 
     const double m1 = m1_SI / MSUN_SI;
     const double m2 = m2_SI / MSUN_SI;
@@ -810,9 +824,11 @@ int SimInspiralEccentricFDAndPhaseSequence(
     double fStart = freqs[0], fEnd = freqs[length - 1];
     if (fStart <= 0) ERROR(PD_EDOM, NULL);
     if (fEnd <= 0) ERROR(PD_EDOM, NULL);
+    if (fRef > fStart) ERROR(PD_EDOM, "fRef should NOT be larger than fStart!");
+    double f_ref = (fRef == 0.) ? fStart : fRef;
 
     expnCoeffsEPC ak;
-    EPCSetup( &ak, m1, m2, fStart, i, inclination_azimuth, e_min);
+    EPCSetup( &ak, m1, m2, f_ref, i, inclination_azimuth, e_min);
 
 
     complex double *data_p_a[10] = {}, *data_c_a[10] = {};
@@ -824,7 +840,7 @@ int SimInspiralEccentricFDAndPhaseSequence(
     /* allocate htilde_p and htilde_c*/
     if (space_cutoff){
         fupper = (2.*fISCO > 1.) ? 1. : 2.*fISCO;
-        f_yr = fStart;
+        f_yr = f_ref;
     }
 
     *h_and_phase = (AmpPhaseFDWaveform **) malloc(sizeof(AmpPhaseFDWaveform *) * 10);

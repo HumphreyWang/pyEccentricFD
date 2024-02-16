@@ -85,6 +85,7 @@ int SimInspiralEccentricFD(Complex16FDWaveform **htilde,
                            double r,
                            double inclination_azimuth,
                            double e_min,
+                           double fRef,
                            bool space_cutoff);
 
 int SimInspiralEccentricFDAmpPhase(AmpPhaseFDWaveform ***h_amp_phase,
@@ -98,6 +99,7 @@ int SimInspiralEccentricFDAmpPhase(AmpPhaseFDWaveform ***h_amp_phase,
                                    double r,
                                    double inclination_azimuth,
                                    double e_min,
+                                   double fRef,
                                    bool space_cutoff);
 
 int SimInspiralEccentricFDAndPhase(AmpPhaseFDWaveform ***h_and_phase,
@@ -111,6 +113,7 @@ int SimInspiralEccentricFDAndPhase(AmpPhaseFDWaveform ***h_and_phase,
                                    double r,
                                    double inclination_azimuth,
                                    double e_min,
+                                   double fRef,
                                    bool space_cutoff);
 
 int SimInspiralEccentricFDAndPhaseSequence(AmpPhaseFDWaveform ***h_and_phase,
@@ -123,6 +126,7 @@ int SimInspiralEccentricFDAndPhaseSequence(AmpPhaseFDWaveform ***h_and_phase,
                                            double r,
                                            double inclination_azimuth,
                                            double e_min,
+                                           double fRef,
                                            bool space_cutoff);
 
 #endif //_INSPIRALECCENTRICFD_H

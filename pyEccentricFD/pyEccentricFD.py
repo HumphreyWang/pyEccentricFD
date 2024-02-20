@@ -33,17 +33,17 @@ class _EccFDWaveform(Structure):
 
 
 def gen_ecc_fd_waveform(mass1, mass2, eccentricity, distance,
-                        coa_phase=0., inclination=0., long_asc_nodes=0.,
+                        coa_phase=0., inclination=0., long_asc_nodes=0., f_ref=0.,
                         delta_f=None, f_lower=None, f_final=0., space_cutoff=False):
     """Note: Thanks to https://stackoverflow.com/questions/5658047"""
     f = _rlib.SimInspiralEccentricFD
     htilde = POINTER(_EccFDWaveform)()
-    # **htilde, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
+    # **htilde, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, fRef, space_cutoff
     f.argtypes = [POINTER(POINTER(_EccFDWaveform)),
-                  c_double, c_double, c_double, c_double, c_double,
+                  c_double, c_double, c_double, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]
     _ = f(byref(htilde), coa_phase, delta_f, mass1, mass2,
-          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, space_cutoff)
+          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, f_ref, space_cutoff)
     length = htilde.contents.length*2
     hp_, hc_ = (_arr_from_buffer(htilde.contents.data_p, length),
                 _arr_from_buffer(htilde.contents.data_c, length))
@@ -62,16 +62,16 @@ class _EccFDAmpPhase(Structure):
 
 
 def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
-                         coa_phase=0., inclination=0., long_asc_nodes=0.,
+                         coa_phase=0., inclination=0., long_asc_nodes=0., f_ref=0.,
                          delta_f=None, f_lower=None, f_final=0., space_cutoff=False):
     f = _rlib.SimInspiralEccentricFDAmpPhase
     h_amp_phase = POINTER(POINTER(_EccFDAmpPhase))()
-    # ***h_amp_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
+    # ***h_amp_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, fRef, space_cutoff
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
-                  c_double, c_double, c_double, c_double, c_double,
+                  c_double, c_double, c_double, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]
     _ = f(byref(h_amp_phase), coa_phase, delta_f, mass1, mass2,
-          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, space_cutoff)
+          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, f_ref, space_cutoff)
     list_of_h = h_amp_phase[:10]
     length = list_of_h[0].contents.length
     amp_p_c_phase = tuple((_arr_from_buffer(list_of_h[j].contents.amp_p, length*2).view(complex128),
@@ -82,16 +82,16 @@ def gen_ecc_fd_amp_phase(mass1, mass2, eccentricity, distance,
 
 
 def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
-                         coa_phase=0., inclination=0., long_asc_nodes=0.,
+                         coa_phase=0., inclination=0., long_asc_nodes=0., f_ref=0.,
                          delta_f=None, f_lower=None, f_final=0., space_cutoff=False):
     f = _rlib.SimInspiralEccentricFDAndPhase
     h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
-    # ***h_and_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, space_cutoff
+    # ***h_and_phase, phiRef, deltaF, m1_SI, m2_SI, fStart, fEnd, i, r, inclination_azimuth, e_min, fRef, space_cutoff
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
-                  c_double, c_double, c_double, c_double, c_double,
+                  c_double, c_double, c_double, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]
     _ = f(byref(h_and_phase), coa_phase, delta_f, mass1, mass2,
-          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, space_cutoff)
+          f_lower, f_final, inclination, distance, long_asc_nodes, eccentricity, f_ref, space_cutoff)
     list_h = h_and_phase[:10]
     length = list_h[0].contents.length
     h_p_c = tuple((_arr_from_buffer(list_h[j].contents.amp_p, length*2).view(complex128),
@@ -102,16 +102,16 @@ def gen_ecc_fd_and_phase(mass1, mass2, eccentricity, distance,
 
 
 def gen_ecc_fd_and_phase_sequence(freqs, mass1, mass2, eccentricity, distance,
-                                  coa_phase=0., inclination=0., long_asc_nodes=0., space_cutoff=False):
+                                  coa_phase=0., inclination=0., long_asc_nodes=0., f_ref=0., space_cutoff=False):
     length = len(freqs)
     f = _rlib.SimInspiralEccentricFDAndPhaseSequence
     h_and_phase = POINTER(POINTER(_EccFDAmpPhase))()
-    # ***h_and_phase, freqs, length, phiRef, m1_SI, m2_SI, i, r, inclination_azimuth, e_min, space_cutoff
+    # ***h_and_phase, freqs, length, phiRef, m1_SI, m2_SI, i, r, inclination_azimuth, e_min, fRef, space_cutoff
     f.argtypes = [POINTER(POINTER(POINTER(_EccFDAmpPhase))),
-                  c_double_p, c_size_t, c_double, c_double,
+                  c_double_p, c_size_t, c_double, c_double, c_double,
                   c_double, c_double, c_double, c_double, c_double, c_bool]
     _ = f(byref(h_and_phase), freqs.ctypes.data_as(c_double_p), length, coa_phase, mass1, mass2,
-          inclination, distance, long_asc_nodes, eccentricity, space_cutoff)
+          inclination, distance, long_asc_nodes, eccentricity, f_ref, space_cutoff)
     list_h = h_and_phase[:10]
     h_p_c = tuple((_arr_from_buffer(list_h[j].contents.amp_p, length*2).view(complex128),
                    _arr_from_buffer(list_h[j].contents.amp_c, length*2).view(complex128)) for j in range(10))

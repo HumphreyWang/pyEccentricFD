@@ -15,6 +15,7 @@ print(strftime("%Y-%m-%d %H:%M:%S"))
 para = {'delta_f': 0.0001,
         'f_final': 1,
         'f_lower': 0.01,
+        'f_ref': 0.005,
         'mass1': 10 * MSUN_SI,
         'mass2': 10 * MSUN_SI,
         'inclination': 0.23,
@@ -28,6 +29,7 @@ h_ap_h = gen_ecc_fd_and_phase(**para)
 hp, hc = gen_ecc_fd_waveform(**para)
 
 para = {'freqs': np.linspace(0.01, 1, 9901),
+        'f_ref': 0.005,
         'mass1': 10 * MSUN_SI,
         'mass2': 10 * MSUN_SI,
         'inclination': 0.23,
